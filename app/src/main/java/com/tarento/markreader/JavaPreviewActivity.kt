@@ -2,9 +2,7 @@ package com.tarento.markreader
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Matrix
-import android.hardware.Camera
+import android.graphics.*
 import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
@@ -16,15 +14,20 @@ import com.tarento.markreader.data.ApiClient
 import com.tarento.markreader.data.OCR
 import com.tarento.markreader.data.OCRService
 import com.tarento.markreader.data.model.ProcessResult
-import com.tarento.markreader.fragments.CameraFragment
+import com.tarento.markreader.fragments.PhotoActivity
+import com.tarento.markreader.fragments.PhotoFragment
 import com.tarento.markreader.utils.BitmapUtils
 import com.tarento.markreader.utils.FLAGS_FULLSCREEN
 import com.tarento.markreader.utils.ProgressBarUtil
+import kotlinx.android.synthetic.main.activity_javapreview.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
 import org.json.JSONObject
 import org.opencv.android.*
+import org.opencv.calib3d.Calib3d
 import org.opencv.core.*
+import org.opencv.core.Point
+import org.opencv.core.Rect
 import org.opencv.imgproc.Imgproc
 import retrofit2.Callback
 import retrofit2.Response
@@ -41,10 +44,10 @@ import kotlin.math.abs
 
 private const val IMMERSIVE_FLAG_TIMEOUT = 500L
 
-private const val AREA_THRESHOLD_LOWER = 150000.00
-private const val AREA_THRESHOLD_START = 180000.00
-private const val AREA_THRESHOLD_END = 200000.00
-private const val AREA_THRESHOLD_UPPER = 220000.00
+private  var AREA_THRESHOLD_LOWER = 80000.00
+private  var AREA_THRESHOLD_START = 100000.00
+private  var AREA_THRESHOLD_END = 130000.00
+private  var AREA_THRESHOLD_UPPER = 150000.00
 
 class JavaPreviewActivity : AppCompatActivity(),
     CameraBridgeViewBase.CvCameraViewListener2 {
@@ -83,7 +86,7 @@ class JavaPreviewActivity : AppCompatActivity(),
         javaCameraView =
             findViewById<View>(R.id.tutorial1_activity_java_surface_view) as JavaCameraView
         mOpenCvCameraView = javaCameraView as CameraBridgeViewBase
-        mOpenCvCameraView?.setMaxFrameSize(640, 480)
+        mOpenCvCameraView?.setMaxFrameSize(480, 640)
         mOpenCvCameraView?.setCameraIndex(0)
         mOpenCvCameraView!!.visibility = SurfaceView.VISIBLE
         mOpenCvCameraView!!.setCvCameraViewListener(this)
@@ -121,6 +124,8 @@ class JavaPreviewActivity : AppCompatActivity(),
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS)
         }
 
+        fileUploading = false
+
 //        javaCameraView?.camera?.let {
 //            setCameraDisplayOrientation(0, it)
 //
@@ -149,30 +154,44 @@ class JavaPreviewActivity : AppCompatActivity(),
         Imgproc.cvtColor(imgCloned, gray, Imgproc.COLOR_BGR2GRAY)
         Imgproc.medianBlur(gray, gray, 5)
         val circles = Mat()
+        if (inputFrame.rgba().width() < 480) {
+            Imgproc.HoughCircles(
+                gray,
+                circles,
+                Imgproc.CV_HOUGH_GRADIENT,
+                1.0,
+                70.0,
+                70.0,
+                20.0,
+                5,
+                15
+            )
+        } else {
+            Imgproc.HoughCircles(
+                gray,
+                circles,
+                Imgproc.CV_HOUGH_GRADIENT,
+                1.5,
+                80.0,
+                80.0,
+                30.0,
+                7,
+                15
+            )
 
-        Imgproc.HoughCircles(
-            gray,
-            circles,
-            Imgproc.CV_HOUGH_GRADIENT,
-            1.5,
-            100.0,
-            100.0,
-            30.0,
-            10,
-            15
-        )
+        }
 
-        if (circles.cols() == 4) {
+        if (circles.cols() > 0) {
             for (x in 0 until Math.min(circles.cols(), 5)) {
                 val circleVec = circles[0, x] ?: break
                 val center =
                     Point(circleVec[0], circleVec[1])
                 val radius = circleVec[2].toInt()
-                //Imgproc.circle(imgCloned, center, 3, Scalar(255.0, 0.0, 0.0), 5)
-                //Imgproc.circle(imgCloned, center, radius, Scalar(255.0, 0.0, 0.0), 2)
+                Imgproc.circle(imgCloned, center, 3, Scalar(255.0, 0.0, 0.0), 5)
+                Imgproc.circle(imgCloned, center, radius, Scalar(255.0, 0.0, 0.0), 2)
             }
             if (circles.cols() == 4) {
-
+                Log.d(TAG, "Circles detected: ${circles.cols()}")
                 var x1 = circles[0, 0][0]
                 var y1 = circles[0, 0][1]
                 var x2 = circles[0, 1][0]
@@ -240,26 +259,37 @@ class JavaPreviewActivity : AppCompatActivity(),
                     Scalar
                         (0.0,0.0,255.0), 3)*/
 
-/*
              Imgproc.line(imgCloned, topLeftOriginal,
                  bottomLeftOriginal,
                 Scalar
-                    (0.0,0.0,255.0), 3)
+                    (0.0,0.0,255.0), 2)
             Imgproc.line(imgCloned, bottomLeftOriginal,
                 bottomRightOriginal,
                 Scalar
-                    (0.0,0.0,255.0), 3)
+                    (0.0,0.0,255.0), 2)
             Imgproc.line(imgCloned, topLeftOriginal,
                 topRightOriginal,
                 Scalar
-                    (0.0,0.0,255.0), 3)
+                    (0.0,0.0,255.0), 2)
             Imgproc.line(imgCloned, topRightOriginal,
                 bottomRightOriginal,
                 Scalar
-                    (0.0,0.0,255.0), 3)*/
+                    (0.0,0.0,255.0), 2)
 
                 val area =
                     abs((bottomRightOriginal.x - topLeftOriginal.x) * (bottomRightOriginal.y - topRightOriginal.y))
+
+                Log.d(TAG, "Area calculated:$area")
+                runOnUiThread {
+                    textViewArea.text = area.toString()
+                }
+                if(inputFrame.rgba().width()<480) {
+                    AREA_THRESHOLD_LOWER = 40000.00 //150000.00
+                    AREA_THRESHOLD_START = 42000.00 //180000.00
+                    AREA_THRESHOLD_END = 58000.00 //200000.00
+                    AREA_THRESHOLD_UPPER = 60000.00 //220000.00
+                }
+
                 if (area >= AREA_THRESHOLD_LOWER && area < AREA_THRESHOLD_START) {
                     Log.d(TAG, "Please bring your phone near to the paper")
                     //Toast.makeText(this@JavaPreviewActivity, "Please bring your phone near to the paper", Toast.LENGTH_SHORT).show()
@@ -289,7 +319,9 @@ class JavaPreviewActivity : AppCompatActivity(),
                         maxWidth,
                         maxHeight
                     )
-                    croppedMat = imgCloned.submat(rectCrop)
+                    //croppedMat = imgCloned.submat(rectCrop)
+
+                    croppedMat = this.homographicTransformation(mRgba, topLeftOriginal, bottomLeftOriginal, topRightOriginal, bottomRightOriginal)
 
                     //m_imgMat(cv::Rect((int)rect.topLeftX, (int)rect.topLeftY, (int)rect.bottomRightX - (int)rect.topLeftX,
                     // (int)rect.bottomRightY - (int)rect.topLeftY)).copyTo(croppedImg);
@@ -350,10 +382,48 @@ class JavaPreviewActivity : AppCompatActivity(),
 
             }
         }
-        circles.release()
+        //circles.release()
         return imgCloned!! // This function must return
     }
-    var fileUploading = false;
+
+    private fun homographicTransformation(
+        imgCloned: Mat?,
+        topLeftOriginal: Point,
+        bottomLeftOriginal: Point,
+        topRightOriginal: Point,
+        bottomRightOriginal: Point
+    ):Mat {
+        val pointSource = arrayListOf<Point>()
+        pointSource.add(Point(topLeftOriginal.x, topLeftOriginal.y))
+        pointSource.add(Point(topRightOriginal.x, topRightOriginal.y))
+        pointSource.add(Point(bottomRightOriginal.x, bottomRightOriginal.y))
+        pointSource.add(Point(bottomLeftOriginal.x, bottomLeftOriginal.y))
+
+        //val size = Size(imgCloned?.width()!!.toDouble(),imgCloned?.height()!!.toDouble())
+        val size = Size(480.0,640.0)
+
+        val destinationMat = Mat(size, CvType.CV_8UC3)
+        var pointDestination = arrayListOf<Point>()
+        pointDestination.add(Point(0.0,0.0))
+        pointDestination.add(Point(size.width - 1, 0.0))
+        pointDestination.add(Point(size.width - 1, size.height - 1))
+        pointDestination.add(Point(0.0, size.height - 1))
+
+
+        val sourcePoint2f = MatOfPoint2f()
+        sourcePoint2f.fromList(pointSource)
+
+        val destinationPoint2f = MatOfPoint2f()
+        destinationPoint2f.fromList(pointDestination)
+
+        val he = Calib3d.findHomography(sourcePoint2f, destinationPoint2f)
+
+        Imgproc.warpPerspective(imgCloned, destinationMat, he, size)
+
+        return destinationMat
+    }
+
+    var fileUploading = false
     private fun moveBitmapToPhotoMap(bmRotated: Bitmap) {
         if(fileUploading) return
         fileUploading = true
@@ -384,9 +454,13 @@ class JavaPreviewActivity : AppCompatActivity(),
             result?.let {
                 //ProgressBarUtil.dismissProgressDialog()
                 gallery = File(it)
-                getOCRImageUploadResponse(gallery)
+                //getOCRImageUploadResponse(gallery)
                 //val intent = Intent(this@JavaPreviewActivity, ImageCropActivity::class.java)
                 //startActivityForResult(intent, 1234)
+                val arag = PhotoFragment.createBundle(File(""))
+                val intent = Intent(this@JavaPreviewActivity, PhotoActivity::class.java)
+                intent.putExtras(arag)
+                startActivity(intent)
             }
         }
     }
