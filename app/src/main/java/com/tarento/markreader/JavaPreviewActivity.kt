@@ -3,6 +3,7 @@ package com.tarento.markreader
 import android.content.Context
 import android.content.Intent
 import android.graphics.*
+import android.media.ExifInterface
 import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
@@ -10,10 +11,13 @@ import android.view.*
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.tarento.markreader.data.ApiClient
 import com.tarento.markreader.data.OCR
 import com.tarento.markreader.data.OCRService
 import com.tarento.markreader.data.model.ProcessResult
+import com.tarento.markreader.data.model.frame.FrameConfig
 import com.tarento.markreader.fragments.PhotoActivity
 import com.tarento.markreader.fragments.PhotoFragment
 import com.tarento.markreader.utils.BitmapUtils
@@ -33,10 +37,8 @@ import retrofit2.Callback
 import retrofit2.Response
 import team.clevel.documentscanner.helpers.ImageUtils
 import team.clevel.documentscanner.helpers.ScannerConstants
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
+import java.io.*
+import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
@@ -44,10 +46,10 @@ import kotlin.math.abs
 
 private const val IMMERSIVE_FLAG_TIMEOUT = 500L
 
-private  var AREA_THRESHOLD_LOWER = 80000.00
-private  var AREA_THRESHOLD_START = 100000.00
-private  var AREA_THRESHOLD_END = 130000.00
-private  var AREA_THRESHOLD_UPPER = 150000.00
+private var AREA_THRESHOLD_LOWER = 80000.00
+private var AREA_THRESHOLD_START = 100000.00
+private var AREA_THRESHOLD_END = 130000.00
+private var AREA_THRESHOLD_UPPER = 150000.00
 
 class JavaPreviewActivity : AppCompatActivity(),
     CameraBridgeViewBase.CvCameraViewListener2 {
@@ -61,6 +63,9 @@ class JavaPreviewActivity : AppCompatActivity(),
     var mRgbaT: Mat? = null
     private lateinit var outputDirectory: File
     private var gallery: File? = null
+
+    lateinit var frameConfig: FrameConfig
+
     private val mLoaderCallback: BaseLoaderCallback =
         object : BaseLoaderCallback(this) {
             override fun onManagerConnected(status: Int) {
@@ -80,14 +85,27 @@ class JavaPreviewActivity : AppCompatActivity(),
     public override fun onCreate(savedInstanceState: Bundle?) {
         Log.i(TAG, "called onCreate")
         super.onCreate(savedInstanceState)
-        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        )
+
         setContentView(R.layout.activity_javapreview)
         container = findViewById(R.id.frameLayout)
         javaCameraView =
             findViewById<View>(R.id.tutorial1_activity_java_surface_view) as JavaCameraView
+
+        val data = getJsonDataFromAsset(applicationContext, "frame_config_json.json");
+        frameConfig = Gson().fromJson(data, FrameConfig::class.java);
+
         mOpenCvCameraView = javaCameraView as CameraBridgeViewBase
-        mOpenCvCameraView?.setMaxFrameSize(480, 640)
-        mOpenCvCameraView?.setCameraIndex(0)
+        mOpenCvCameraView?.setMinMaxFrameSize(
+            frameConfig.min_frame_width,
+            frameConfig.min_frame_height,
+            frameConfig.max_frame_width,
+            frameConfig.max_frame_height
+        )
+        mOpenCvCameraView?.setCameraIndex(frameConfig.camera_index)
         mOpenCvCameraView!!.visibility = SurfaceView.VISIBLE
         mOpenCvCameraView!!.setCvCameraViewListener(this)
 
@@ -148,7 +166,6 @@ class JavaPreviewActivity : AppCompatActivity(),
 
     override fun onCameraFrame(inputFrame: CameraBridgeViewBase.CvCameraViewFrame): Mat {
         mRgba = inputFrame.rgba();
-
         val imgCloned = mRgba!!.clone()
         val gray = Mat()
         Imgproc.cvtColor(imgCloned, gray, Imgproc.COLOR_BGR2GRAY)
@@ -159,24 +176,24 @@ class JavaPreviewActivity : AppCompatActivity(),
                 gray,
                 circles,
                 Imgproc.CV_HOUGH_GRADIENT,
-                1.0,
-                70.0,
-                70.0,
-                20.0,
-                5,
-                15
+                frameConfig.frame_small.circle.dp,
+                frameConfig.frame_small.circle.minDist,
+                frameConfig.frame_small.circle.param1,
+                frameConfig.frame_small.circle.param2,
+                frameConfig.frame_small.circle.minRadius,
+                frameConfig.frame_small.circle.maxRadius
             )
         } else {
             Imgproc.HoughCircles(
                 gray,
                 circles,
                 Imgproc.CV_HOUGH_GRADIENT,
-                1.5,
-                80.0,
-                80.0,
-                30.0,
-                7,
-                15
+                frameConfig.frame_large.circle.dp,
+                frameConfig.frame_large.circle.minDist,
+                frameConfig.frame_large.circle.param1,
+                frameConfig.frame_large.circle.param2,
+                frameConfig.frame_large.circle.minRadius,
+                frameConfig.frame_large.circle.maxRadius
             )
 
         }
@@ -259,22 +276,30 @@ class JavaPreviewActivity : AppCompatActivity(),
                     Scalar
                         (0.0,0.0,255.0), 3)*/
 
-             Imgproc.line(imgCloned, topLeftOriginal,
-                 bottomLeftOriginal,
-                Scalar
-                    (0.0,0.0,255.0), 2)
-            Imgproc.line(imgCloned, bottomLeftOriginal,
-                bottomRightOriginal,
-                Scalar
-                    (0.0,0.0,255.0), 2)
-            Imgproc.line(imgCloned, topLeftOriginal,
-                topRightOriginal,
-                Scalar
-                    (0.0,0.0,255.0), 2)
-            Imgproc.line(imgCloned, topRightOriginal,
-                bottomRightOriginal,
-                Scalar
-                    (0.0,0.0,255.0), 2)
+                Imgproc.line(
+                    imgCloned, topLeftOriginal,
+                    bottomLeftOriginal,
+                    Scalar
+                        (0.0, 0.0, 255.0), 2
+                )
+                Imgproc.line(
+                    imgCloned, bottomLeftOriginal,
+                    bottomRightOriginal,
+                    Scalar
+                        (0.0, 0.0, 255.0), 2
+                )
+                Imgproc.line(
+                    imgCloned, topLeftOriginal,
+                    topRightOriginal,
+                    Scalar
+                        (0.0, 0.0, 255.0), 2
+                )
+                Imgproc.line(
+                    imgCloned, topRightOriginal,
+                    bottomRightOriginal,
+                    Scalar
+                        (0.0, 0.0, 255.0), 2
+                )
 
                 val area =
                     abs((bottomRightOriginal.x - topLeftOriginal.x) * (bottomRightOriginal.y - topRightOriginal.y))
@@ -283,11 +308,16 @@ class JavaPreviewActivity : AppCompatActivity(),
                 runOnUiThread {
                     textViewArea.text = area.toString()
                 }
-                if(inputFrame.rgba().width()<480) {
-                    AREA_THRESHOLD_LOWER = 40000.00 //150000.00
-                    AREA_THRESHOLD_START = 42000.00 //180000.00
-                    AREA_THRESHOLD_END = 58000.00 //200000.00
-                    AREA_THRESHOLD_UPPER = 60000.00 //220000.00
+                if (inputFrame.rgba().width() < 480) {
+                    AREA_THRESHOLD_LOWER = frameConfig.frame_small.aREA_THRESHOLD_LOWER
+                    AREA_THRESHOLD_START = frameConfig.frame_small.aREA_THRESHOLD_START
+                    AREA_THRESHOLD_END = frameConfig.frame_small.aREA_THRESHOLD_END
+                    AREA_THRESHOLD_UPPER = frameConfig.frame_small.aREA_THRESHOLD_UPPER
+                } else {
+                    AREA_THRESHOLD_LOWER = frameConfig.frame_large.aREA_THRESHOLD_LOWER
+                    AREA_THRESHOLD_START = frameConfig.frame_large.aREA_THRESHOLD_START
+                    AREA_THRESHOLD_END = frameConfig.frame_large.aREA_THRESHOLD_END
+                    AREA_THRESHOLD_UPPER = frameConfig.frame_large.aREA_THRESHOLD_UPPER
                 }
 
                 if (area >= AREA_THRESHOLD_LOWER && area < AREA_THRESHOLD_START) {
@@ -321,15 +351,17 @@ class JavaPreviewActivity : AppCompatActivity(),
                     )
                     //croppedMat = imgCloned.submat(rectCrop)
 
-                    croppedMat = this.homographicTransformation(mRgba, topLeftOriginal, bottomLeftOriginal, topRightOriginal, bottomRightOriginal)
+                    val finalRgBa = mRgba!!.clone()
 
-                    //m_imgMat(cv::Rect((int)rect.topLeftX, (int)rect.topLeftY, (int)rect.bottomRightX - (int)rect.topLeftX,
-                    // (int)rect.bottomRightY - (int)rect.topLeftY)).copyTo(croppedImg);
+                    croppedMat = this.homographicTransformation(
+                        finalRgBa,
+                        topLeftOriginal,
+                        bottomLeftOriginal,
+                        topRightOriginal,
+                        bottomRightOriginal
+                    )
 
                     val resultBitmap = ImageUtils.matToBitmap(croppedMat)
-
-//                var bitmap = resultBitmap as Bitmap?
-//                bitmap = Bitmap.createScaledBitmap(bitmap!!, 640, 480, false)
 
                     val matrix = Matrix()
                     matrix.setRotate(90F)
@@ -356,6 +388,18 @@ class JavaPreviewActivity : AppCompatActivity(),
 
                     fos.write(byteArray)
                     fos.close()*/
+
+//                    var sourceWidth = resultBitmap.width
+//                    var sourceHeight = resultBitmap.height
+
+//                    var widthRatio = sourceWidth/sourceHeight
+//                    var heightRatio = sourceHeight/sourceWidth
+//
+//                    var maxRatio = Math.max(widthRatio, heightRatio)
+
+
+//                    var bmRotated = Bitmap.createScaledBitmap(resultBitmap, sourceHeight, sourceWidth, true)
+
 
                     moveBitmapToPhotoMap(bmRotated)
                     //mOpenCvCameraView?.disableView()
@@ -392,19 +436,18 @@ class JavaPreviewActivity : AppCompatActivity(),
         bottomLeftOriginal: Point,
         topRightOriginal: Point,
         bottomRightOriginal: Point
-    ):Mat {
+    ): Mat {
         val pointSource = arrayListOf<Point>()
         pointSource.add(Point(topLeftOriginal.x, topLeftOriginal.y))
         pointSource.add(Point(topRightOriginal.x, topRightOriginal.y))
         pointSource.add(Point(bottomRightOriginal.x, bottomRightOriginal.y))
         pointSource.add(Point(bottomLeftOriginal.x, bottomLeftOriginal.y))
 
-        //val size = Size(imgCloned?.width()!!.toDouble(),imgCloned?.height()!!.toDouble())
-        val size = Size(480.0,640.0)
+        val size = Size(frameConfig.homographic_image_height, frameConfig.homographic_image_width)
 
         val destinationMat = Mat(size, CvType.CV_8UC3)
         var pointDestination = arrayListOf<Point>()
-        pointDestination.add(Point(0.0,0.0))
+        pointDestination.add(Point(0.0, 0.0))
         pointDestination.add(Point(size.width - 1, 0.0))
         pointDestination.add(Point(size.width - 1, size.height - 1))
         pointDestination.add(Point(0.0, size.height - 1))
@@ -425,8 +468,9 @@ class JavaPreviewActivity : AppCompatActivity(),
 
     var fileUploading = false
     private fun moveBitmapToPhotoMap(bmRotated: Bitmap) {
-        if(fileUploading) return
+        if (fileUploading) return
         fileUploading = true
+
         // Create output file to hold the image
         val photoFile = createFile(outputDirectory, FILENAME, PHOTO_EXTENSION)
 
@@ -475,6 +519,7 @@ class JavaPreviewActivity : AppCompatActivity(),
             var newScaledBitmap = bmp
             fileOutputStream =
                 FileOutputStream(finalImage)
+
             newScaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream)
             println("newScaledBitmap $newScaledBitmap")
             ScannerConstants.selectedImageBitmap = newScaledBitmap;
@@ -552,8 +597,12 @@ class JavaPreviewActivity : AppCompatActivity(),
         hero.enqueue(object : Callback<OCR> {
             override fun onFailure(call: retrofit2.Call<OCR>, t: Throwable) {
 
-                Toast.makeText(this@JavaPreviewActivity, "Some thing went wrong", Toast.LENGTH_SHORT)
-                    //.show()
+                Toast.makeText(
+                    this@JavaPreviewActivity,
+                    "Some thing went wrong",
+                    Toast.LENGTH_SHORT
+                )
+                //.show()
 
                 ProgressBarUtil.dismissProgressDialog()
             }
@@ -568,8 +617,12 @@ class JavaPreviewActivity : AppCompatActivity(),
 
                     if (response.body() == null || response.body()?.filepath == null) {
 
-                        Toast.makeText(this@JavaPreviewActivity, "Some thing went wrong", Toast.LENGTH_SHORT)
-                            //.show()
+                        Toast.makeText(
+                            this@JavaPreviewActivity,
+                            "Some thing went wrong",
+                            Toast.LENGTH_SHORT
+                        )
+                        //.show()
 
                         ProgressBarUtil.dismissProgressDialog()
                         return
@@ -588,7 +641,6 @@ class JavaPreviewActivity : AppCompatActivity(),
     private fun getGetProcessData(data: String) {
 
 
-
         val apiInterface: OCRService = ApiClient.getClient()!!.create(OCRService::class.java)
         val json = JSONObject()
         json.put("filename", data)
@@ -604,8 +656,12 @@ class JavaPreviewActivity : AppCompatActivity(),
             override fun onFailure(call: retrofit2.Call<ProcessResult>, t: Throwable) {
                 Log.e(TAG, "onResponse: Failuer", t)
 
-                    Toast.makeText(this@JavaPreviewActivity, "Some thing went wrong", Toast.LENGTH_SHORT)
-                        //.show()
+                Toast.makeText(
+                    this@JavaPreviewActivity,
+                    "Some thing went wrong",
+                    Toast.LENGTH_SHORT
+                )
+                //.show()
 
                 ProgressBarUtil.dismissProgressDialog()
             }
@@ -623,13 +679,18 @@ class JavaPreviewActivity : AppCompatActivity(),
 
                     processResult?.let {
                         if (processResult.status.code == 200) {
-                            val intent = Intent(this@JavaPreviewActivity, ResultActivity::class.java)
+                            val intent =
+                                Intent(this@JavaPreviewActivity, ResultActivity::class.java)
                             intent.putExtra("result", processResult)
                             startActivity(intent)
                         } else {
 
-                                Toast.makeText(this@JavaPreviewActivity, "Some thing went wrong", Toast.LENGTH_SHORT)
-                                    //.show()
+                            Toast.makeText(
+                                this@JavaPreviewActivity,
+                                "Some thing went wrong",
+                                Toast.LENGTH_SHORT
+                            )
+                            //.show()
 
                         }
 
@@ -641,5 +702,16 @@ class JavaPreviewActivity : AppCompatActivity(),
 
     }
 
+
+    fun getJsonDataFromAsset(context: Context, fileName: String): String? {
+        val jsonString: String
+        try {
+            jsonString = context.assets.open(fileName).bufferedReader().use { it.readText() }
+        } catch (ioException: IOException) {
+            ioException.printStackTrace()
+            return null
+        }
+        return jsonString
+    }
 
 }

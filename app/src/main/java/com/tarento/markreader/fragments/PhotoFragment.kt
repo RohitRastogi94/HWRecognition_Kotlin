@@ -34,6 +34,7 @@ import com.tarento.markreader.data.ApiClient
 import com.tarento.markreader.data.OCR
 import com.tarento.markreader.data.OCRService
 import com.tarento.markreader.data.model.ProcessResult
+import com.tarento.markreader.utils.BitmapUtils
 import com.tarento.markreader.utils.ProgressBarUtil
 import kotlinx.android.synthetic.main.fragment_photo.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -42,6 +43,7 @@ import org.json.JSONObject
 import retrofit2.Callback
 import retrofit2.Response
 import team.clevel.documentscanner.helpers.ScannerConstants
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -117,6 +119,7 @@ class PhotoFragment internal constructor() : Fragment() {
 
         val data = encodeImage(file) ?: return
 
+        //BitmapUtils.getCameraPhotoOrientation(activity, ByteArrayInputStream(data))
 
 //        val requestBody = data.toRequestBody("application/octet-stream".toMediaTypeOrNull())
         val requestBody = RequestBody.create("application/octet-stream".toMediaTypeOrNull(), data)
@@ -203,7 +206,7 @@ class PhotoFragment internal constructor() : Fragment() {
                         } else {
 
                             Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
-                            //.show()
+                            .show()
 
                         }
 
