@@ -45,6 +45,8 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
     protected int mFrameHeight;
     protected int mMaxHeight;
     protected int mMaxWidth;
+    protected int mMinHeight;
+    protected int mMinWidth;
     protected float mScale = 0;
     protected int mPreviewFormat = RGBA;
     protected int mCameraIndex = CAMERA_ID_ANY;
@@ -286,6 +288,13 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
         mMaxHeight = maxHeight;
     }
 
+    public void setMinMaxFrameSize(int minWidth, int minHeight, int maxWidth, int maxHeight) {
+        mMaxWidth = maxWidth;
+        mMaxHeight = maxHeight;
+        mMinWidth = minWidth;
+        mMinHeight = minHeight;
+    }
+
     public void SetCaptureFormat(int format)
     {
         mPreviewFormat = format;
@@ -464,6 +473,7 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
         public int getHeight(Object obj);
     };
 
+
     /**
      * This helper method can be called by subclasses to select camera preview size.
      * It goes over the list of the supported preview sizes and selects the maximum one which
@@ -483,11 +493,12 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
         for (Object size : supportedSizes) {
             int width = accessor.getWidth(size);
             int height = accessor.getHeight(size);
-
-            if (width <= maxAllowedWidth && height <= maxAllowedHeight) {
-                if (width >= calcWidth && height >= calcHeight) {
-                    calcWidth = (int) width;
-                    calcHeight = (int) height;
+            if(width == mMaxWidth && height == mMaxHeight || width == mMinWidth && height == mMinHeight) {
+                if (width <= maxAllowedWidth && height <= maxAllowedHeight) {
+                    if (width >= calcWidth && height >= calcHeight) {
+                        calcWidth = (int) width;
+                        calcHeight = (int) height;
+                    }
                 }
             }
         }
