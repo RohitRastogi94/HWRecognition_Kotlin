@@ -41,8 +41,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         container = findViewById(R.id.fragment_container)
 
-        val intent = Intent(this, JavaPreviewActivity::class.java)
-        startActivity(intent)
     }
 
     override fun onResume() {

@@ -21,16 +21,16 @@
     }
   },
   "frame_large": {
-    "AREA_THRESHOLD_LOWER": 80000.00,
-    "AREA_THRESHOLD_START": 100000.00,
-    "AREA_THRESHOLD_END": 130000.00,
-    "AREA_THRESHOLD_UPPER": 150000.00,
+    "AREA_THRESHOLD_LOWER": 100000.00,
+    "AREA_THRESHOLD_START": 150000.00,
+    "AREA_THRESHOLD_END": 200000.00,
+    "AREA_THRESHOLD_UPPER": 220000.00,
     "Circle": {
       "dp": 1.5,
       "minDist": 80.0,
       "param1": 80.0,
       "param2": 30.0,
-      "minRadius": 7,
+      "minRadius": 8,
       "maxRadius": 15
     }
   }

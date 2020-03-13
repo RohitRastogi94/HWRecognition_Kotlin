@@ -172,6 +172,12 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                         params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
                     }
 
+                    List<String> FlashMode = params.getSupportedFlashModes();
+                    if (FlashMode != null && FlashMode.contains(Camera.Parameters.FLASH_MODE_TORCH))
+                    {
+                        params.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                    }
+
                     mCamera.setParameters(params);
                     params = mCamera.getParameters();
 
