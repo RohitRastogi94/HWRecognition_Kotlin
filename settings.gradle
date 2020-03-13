@@ -1,3 +1,3 @@
-include ':app', ':openCVLibrary', ':documentscanner', ':openCVLibrary330'
+include ':app', ':openCVLibrary', ':documentscanner'
 include ':library'
 rootProject.name = 'Mark Reader'

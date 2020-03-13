@@ -104,7 +104,7 @@
                   android:configChanges="orientation|keyboardHidden|screenSize"
                   android:icon="@mipmap/ic_launcher"
                   android:rotationAnimation="seamless"
-                  android:screenOrientation="landscape"
+                  android:screenOrientation="portrait"
                   android:theme="@style/AppTheme">
             <!-- Main app intent filter -->
             <intent-filter>

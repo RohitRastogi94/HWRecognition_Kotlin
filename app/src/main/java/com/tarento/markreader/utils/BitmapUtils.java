@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.util.Log;
 import android.util.Pair;
 
+import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -948,4 +949,31 @@ public class BitmapUtils {
         }
     }
     // endregion
+
+    public static int getCameraPhotoOrientation(Context context, ByteArrayInputStream stream){
+        int rotate = 0;
+        try {
+
+            ExifInterface exif = new ExifInterface(stream);
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    rotate = 270;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    rotate = 180;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    rotate = 90;
+                    break;
+            }
+
+            Log.i("RotateImage", "Exif orientation: " + orientation);
+            Log.i("RotateImage", "Rotate value: " + rotate);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return rotate;
+    }
 }

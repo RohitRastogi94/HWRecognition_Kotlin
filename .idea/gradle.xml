@@ -15,7 +15,6 @@
             <option value="$PROJECT_DIR$/documentscanner" />
             <option value="$PROJECT_DIR$/library" />
             <option value="$PROJECT_DIR$/openCVLibrary" />
-            <option value="$PROJECT_DIR$/openCVLibrary330" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

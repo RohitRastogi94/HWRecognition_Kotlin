@@ -1,0 +1,37 @@
+{
+  "camera_index": 0,
+  "max_frame_width": 640,
+  "max_frame_height": 480,
+  "min_frame_width": 320,
+  "min_frame_height": 240,
+  "homographic_image_width": 480.0,
+  "homographic_image_height": 640.0,
+  "frame_small": {
+    "AREA_THRESHOLD_LOWER": 40000.00,
+    "AREA_THRESHOLD_START": 42000.00,
+    "AREA_THRESHOLD_END": 58000.00,
+    "AREA_THRESHOLD_UPPER": 60000.00,
+    "Circle": {
+      "dp": 1.0,
+      "minDist": 70.0,
+      "param1": 70.0,
+      "param2": 20.0,
+      "minRadius": 5,
+      "maxRadius": 15
+    }
+  },
+  "frame_large": {
+    "AREA_THRESHOLD_LOWER": 80000.00,
+    "AREA_THRESHOLD_START": 100000.00,
+    "AREA_THRESHOLD_END": 130000.00,
+    "AREA_THRESHOLD_UPPER": 150000.00,
+    "Circle": {
+      "dp": 1.5,
+      "minDist": 80.0,
+      "param1": 80.0,
+      "param2": 30.0,
+      "minRadius": 7,
+      "maxRadius": 15
+    }
+  }
+}
