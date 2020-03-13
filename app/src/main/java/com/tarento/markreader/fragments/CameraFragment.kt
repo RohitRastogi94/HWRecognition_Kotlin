@@ -58,6 +58,7 @@ import com.tarento.markreader.data.ApiClient
 import com.tarento.markreader.data.OCR
 import com.tarento.markreader.data.OCRService
 import com.tarento.markreader.data.model.ProcessResult
+import com.tarento.markreader.scanner.ScannerConstants
 import com.tarento.markreader.utils.*
 import kotlinx.android.synthetic.main.camera_ui_container.*
 import kotlinx.android.synthetic.main.fragment_camera.*
@@ -68,9 +69,9 @@ import okhttp3.RequestBody
 import org.json.JSONObject
 import retrofit2.Callback
 import retrofit2.Response
-import team.clevel.documentscanner.ImageCropActivity
-import team.clevel.documentscanner.helpers.ImageUtils
-import team.clevel.documentscanner.helpers.ScannerConstants
+//import team.clevel.documentscanner.ImageCropActivity
+//import team.clevel.documentscanner.helpers.ImageUtils
+//import team.clevel.documentscanner.helpers.ScannerConstants
 import java.io.*
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
@@ -256,11 +257,11 @@ class CameraFragment : Fragment() {
     private fun showResult(result: String) {
 //        convertedImage = getResizedBitmap(ScannerConstants.selectedImageBitmap, 960)
 
-        val intent = Intent(activity, ImageCropActivity::class.java)
+       // val intent = Intent(activity, ImageCropActivity::class.java)
 //        intent.putExtra("photo", result)
 
 //        println("showResult")
-        startActivityForResult(intent, 1234)
+        //startActivityForResult(intent, 1234)
 //        println(intent)
 
 
@@ -380,7 +381,7 @@ class CameraFragment : Fragment() {
                 FileOutputStream(finalImage)
             newScaledBitmap.compress(Bitmap.CompressFormat.JPEG, 60, fileOutputStream)
             println("newScaledBitmap $newScaledBitmap")
-            ScannerConstants.selectedImageBitmap = newScaledBitmap;
+            //ScannerConstants.selectedImageBitmap = newScaledBitmap;
         } catch (e: FileNotFoundException) { // e.printStackTrace();
             e.printStackTrace()
         }
@@ -661,14 +662,14 @@ class CameraFragment : Fragment() {
 
         // Listener for button used to view last photo
         controls.findViewById<ImageButton>(R.id.photo_view_button).setOnClickListener {
-            if (ScannerConstants.selectedImageBitmap != null) {
+            /*if (ScannerConstants.selectedImageBitmap != null) {
                 gallery?.let {
                     val arag = PhotoFragment.createBundle(it)
                     val intent = Intent(activity, PhotoActivity::class.java)
                     intent.putExtras(arag)
                     startActivity(intent)
                 }
-            }
+            }*/
 //            Navigation.findNavController(requireActivity(), R.id.fragment_container).navigate(
 //                CameraFragmentDirections.actionCameraToGallery(outputDirectory.absolutePath)
 //            )
@@ -812,7 +813,7 @@ class CameraFragment : Fragment() {
 
         if (requestCode == 1234 && resultCode == Activity.RESULT_OK) {
             println("onActivityResult")
-            if (ScannerConstants.selectedImageBitmap != null) {
+            /*if (ScannerConstants.selectedImageBitmap != null) {
                 println("selectedImageBitmap ${ScannerConstants.selectedImageBitmap}")
 //                imgBitmap.setImageBitmap(ScannerConstants.selectedImageBitmap)
 //                imgBitmap.visibility=View.VISIBLE
@@ -820,7 +821,7 @@ class CameraFragment : Fragment() {
 
                 getOCRImageUploadResponse(null)
 
-            }
+            }*/
         }
     }
 

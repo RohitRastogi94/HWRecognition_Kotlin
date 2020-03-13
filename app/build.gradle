@@ -5,6 +5,7 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: "androidx.navigation.safeargs"
 
 android {
+
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
     defaultConfig {
@@ -48,6 +49,7 @@ android {
 }
 
 dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
     // Kotlin lang
     implementation 'androidx.core:core-ktx:1.1.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
@@ -75,23 +77,6 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     kapt 'com.github.bumptech.glide:compiler:4.10.0'
 
-    // Unit testing
-    testImplementation 'androidx.test.ext:junit:1.1.1'
-    testImplementation 'androidx.test:rules:1.2.0'
-    testImplementation 'androidx.test:runner:1.2.0'
-    testImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    testImplementation "org.robolectric:robolectric:4.3"
-
-    // Instrumented testing
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test:rules:1.2.0'
-    androidTestImplementation 'androidx.test:runner:1.2.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-
-    /*================================= Image Picker =================================*/
-    api 'com.github.yalantis:ucrop:2.2.2'
-    api 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
-    api 'com.yashoid:instacropper:1.0.6'
 
     implementation 'com.squareup.retrofit2:retrofit:2.7.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.7.0'

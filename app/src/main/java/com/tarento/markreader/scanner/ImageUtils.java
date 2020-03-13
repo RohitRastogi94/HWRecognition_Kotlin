@@ -1,19 +1,9 @@
-/*
- * *
- *  * Created by Muhammet Ali YÜCE on 3/5/19 4:26 PM
- *  * on Github: /mayuce
- *  * Copyright (c) 2019 . All rights reserved.
- *  * Last modified 3/4/19 4:56 PM
- *
- */
-
-package team.clevel.documentscanner.helpers;
+package com.tarento.markreader.scanner;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import org.opencv.android.Utils;
 import org.opencv.core.*;
-import org.opencv.imgproc.Imgproc;
 
 public class ImageUtils {
 
