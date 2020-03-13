@@ -1,16 +1,22 @@
 package com.tarento.markreader
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.*
 import android.media.ExifInterface
 import android.os.AsyncTask
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.navigation.Navigation
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.tarento.markreader.data.ApiClient
@@ -18,8 +24,7 @@ import com.tarento.markreader.data.OCR
 import com.tarento.markreader.data.OCRService
 import com.tarento.markreader.data.model.ProcessResult
 import com.tarento.markreader.data.model.frame.FrameConfig
-import com.tarento.markreader.fragments.PhotoActivity
-import com.tarento.markreader.fragments.PhotoFragment
+import com.tarento.markreader.fragments.*
 import com.tarento.markreader.utils.BitmapUtils
 import com.tarento.markreader.utils.FLAGS_FULLSCREEN
 import com.tarento.markreader.utils.ProgressBarUtil
@@ -43,6 +48,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
 
+
+private const val PERMISSIONS_REQUEST_CODE = 10
+private val PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.CAMERA)
 
 private const val IMMERSIVE_FLAG_TIMEOUT = 500L
 
@@ -119,6 +127,7 @@ class JavaPreviewActivity : AppCompatActivity(),
         if (mOpenCvCameraView != null) mOpenCvCameraView!!.disableView()
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     public override fun onResume() {
         super.onResume()
         // Before setting full screen flags, we must wait a bit to let UI settle; otherwise, we may
@@ -126,6 +135,24 @@ class JavaPreviewActivity : AppCompatActivity(),
         container.postDelayed({
             container.systemUiVisibility = FLAGS_FULLSCREEN
         }, IMMERSIVE_FLAG_TIMEOUT)
+        // Make sure that all permissions are still present, since user could have removed them
+        //  while the app was on paused state
+        if (!hasPermissions(this)) {
+            // Request camera-related permissions
+            requestPermissions(PERMISSIONS_REQUIRED, PERMISSIONS_REQUEST_CODE)
+        } else {
+            initializeOpenCVLibrary()
+        }
+
+        fileUploading = false
+
+//        javaCameraView?.camera?.let {
+//            setCameraDisplayOrientation(0, it)
+//
+//        }
+    }
+
+    private fun initializeOpenCVLibrary() {
         if (!OpenCVLoader.initDebug()) {
             Log.d(
                 TAG,
@@ -141,13 +168,6 @@ class JavaPreviewActivity : AppCompatActivity(),
             Log.d(TAG, "OpenCV library found inside package. Using it!")
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS)
         }
-
-        fileUploading = false
-
-//        javaCameraView?.camera?.let {
-//            setCameraDisplayOrientation(0, it)
-//
-//        }
     }
 
 
@@ -351,10 +371,8 @@ class JavaPreviewActivity : AppCompatActivity(),
                     )
                     //croppedMat = imgCloned.submat(rectCrop)
 
-                    val finalRgBa = mRgba!!.clone()
-
                     croppedMat = this.homographicTransformation(
-                        finalRgBa,
+                        mRgba,
                         topLeftOriginal,
                         bottomLeftOriginal,
                         topRightOriginal,
@@ -712,6 +730,26 @@ class JavaPreviewActivity : AppCompatActivity(),
             return null
         }
         return jsonString
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSIONS_REQUEST_CODE) {
+            if (PackageManager.PERMISSION_GRANTED == grantResults.firstOrNull()) {
+                // Take the user to the success fragment when permission is granted
+                //Toast.makeText(this, "Permission request granted", Toast.LENGTH_LONG).show()
+                initializeOpenCVLibrary()
+            } else {
+                Toast.makeText(this, "Permission request denied", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    /** Convenience method used to check if all permissions required by this app are granted */
+    private fun hasPermissions(context: Context) = PERMISSIONS_REQUIRED.all {
+        ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
     }
 
 }
