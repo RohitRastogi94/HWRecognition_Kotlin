@@ -467,7 +467,7 @@ class JavaPreviewActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraVi
             super.onPostExecute(result)
             result?.let {
                 gallery = File(it)
-                val arag = PhotoFragment.createBundle(File(""))
+                val arag = PhotoFragment.createBundle(gallery!!)
                 val intent = Intent(this@JavaPreviewActivity, PhotoActivity::class.java)
                 intent.putExtras(arag)
                 startActivity(intent)
@@ -485,7 +485,6 @@ class JavaPreviewActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraVi
                 FileOutputStream(finalImage)
 
             newScaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream)
-            ScannerConstants.selectedImageBitmap = newScaledBitmap;
         } catch (e: FileNotFoundException) {
             e.printStackTrace()
         }
@@ -512,7 +511,7 @@ class JavaPreviewActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraVi
         /** Use external media if it is available, our app's file directory otherwise */
         fun getOutputDirectory(context: Context): File {
             val appContext = context.applicationContext
-            val mediaDir = context.externalMediaDirs.firstOrNull()?.let {
+            val mediaDir = context.externalCacheDirs.firstOrNull()?.let {
                 File(it, appContext.resources.getString(R.string.app_name)).apply { mkdirs() }
             }
             return if (mediaDir != null && mediaDir.exists())
