@@ -44,7 +44,7 @@ class PhotoFragment internal constructor() : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val args = arguments ?: return
         resourceFileToUpload = args.getString(FILE_NAME_KEY)?.let { File(it) }
-        Glide.with(this).load(ScannerConstants.previewImageBitmap).into(imageViewPreview)
+        Glide.with(this).load(ScannerConstants.previewImageBitmap).placeholder(R.drawable.ic_photo).into(imageViewPreview)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

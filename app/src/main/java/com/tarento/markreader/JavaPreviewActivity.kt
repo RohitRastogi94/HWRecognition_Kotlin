@@ -383,13 +383,14 @@ class JavaPreviewActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraVi
                         bottomRightOriginal
                     )
                     val sharped = Mat()
-                    Imgproc.cvtColor(croppedMat, sharped, Imgproc.COLOR_BGR2GRAY);
+                    val sourceMat = croppedMat.clone()
+                    Imgproc.cvtColor(sourceMat, sharped, Imgproc.COLOR_BGR2GRAY);
                     Imgproc.adaptiveThreshold(sharped, sharped,
                         255.0, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 5, 4.0
                     );
 
                     ScannerConstants.previewImageBitmap = rotateImage(ImageUtils.matToBitmap(sharped))
-                    moveBitmapToPhotoMap(rotateImage(ImageUtils.matToBitmap(croppedMat)))
+                    moveBitmapToPhotoMap(rotateImage(ImageUtils.matToBitmap(sourceMat)))
                 }
             }
         }
@@ -484,7 +485,7 @@ class JavaPreviewActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraVi
             fileOutputStream =
                 FileOutputStream(finalImage)
 
-            newScaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream)
+            newScaledBitmap.compress(Bitmap.CompressFormat.JPEG, 90, fileOutputStream)
         } catch (e: FileNotFoundException) {
             e.printStackTrace()
         }
