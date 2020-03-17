@@ -383,13 +383,14 @@ class JavaPreviewActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraVi
                         bottomRightOriginal
                     )
                     val sharped = Mat()
-                    Imgproc.cvtColor(croppedMat, sharped, Imgproc.COLOR_BGR2GRAY);
+                    val sourceMat = croppedMat.clone()
+                    Imgproc.cvtColor(sourceMat, sharped, Imgproc.COLOR_BGR2GRAY);
                     Imgproc.adaptiveThreshold(sharped, sharped,
                         255.0, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 5, 4.0
                     );
 
                     ScannerConstants.previewImageBitmap = rotateImage(ImageUtils.matToBitmap(sharped))
-                    moveBitmapToPhotoMap(rotateImage(ImageUtils.matToBitmap(croppedMat)))
+                    moveBitmapToPhotoMap(rotateImage(ImageUtils.matToBitmap(sourceMat)))
                 }
             }
         }
@@ -467,7 +468,7 @@ class JavaPreviewActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraVi
             super.onPostExecute(result)
             result?.let {
                 gallery = File(it)
-                val arag = PhotoFragment.createBundle(File(""))
+                val arag = PhotoFragment.createBundle(gallery!!)
                 val intent = Intent(this@JavaPreviewActivity, PhotoActivity::class.java)
                 intent.putExtras(arag)
                 startActivity(intent)
@@ -484,8 +485,7 @@ class JavaPreviewActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraVi
             fileOutputStream =
                 FileOutputStream(finalImage)
 
-            newScaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream)
-            ScannerConstants.selectedImageBitmap = newScaledBitmap;
+            newScaledBitmap.compress(Bitmap.CompressFormat.JPEG, 90, fileOutputStream)
         } catch (e: FileNotFoundException) {
             e.printStackTrace()
         }
@@ -512,7 +512,7 @@ class JavaPreviewActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraVi
         /** Use external media if it is available, our app's file directory otherwise */
         fun getOutputDirectory(context: Context): File {
             val appContext = context.applicationContext
-            val mediaDir = context.externalMediaDirs.firstOrNull()?.let {
+            val mediaDir = context.externalCacheDirs.firstOrNull()?.let {
                 File(it, appContext.resources.getString(R.string.app_name)).apply { mkdirs() }
             }
             return if (mediaDir != null && mediaDir.exists())

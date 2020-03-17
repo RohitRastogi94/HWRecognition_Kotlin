@@ -2,6 +2,7 @@ package com.tarento.markreader.fragments
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -30,7 +31,7 @@ import java.io.File
 
 /** Fragment used for each individual page showing a photo */
 class PhotoFragment internal constructor() : Fragment() {
-
+    private var resourceFileToUpload: File? = null
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -42,16 +43,16 @@ class PhotoFragment internal constructor() : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val args = arguments ?: return
-        val resource = args.getString(FILE_NAME_KEY)?.let { File(it) } ?: R.drawable.ic_photo
-        Glide.with(this).load(ScannerConstants.previewImageBitmap).into(imageViewPreview)
-
+        resourceFileToUpload = args.getString(FILE_NAME_KEY)?.let { File(it) }
+        Glide.with(this).load(ScannerConstants.previewImageBitmap).placeholder(R.drawable.ic_photo).into(imageViewPreview)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
         buttonSubmit.setOnClickListener {
-            getOCRImageUploadResponse(File(""))
+            if (resourceFileToUpload != null)
+                getOCRImageUploadResponse(resourceFileToUpload)
         }
 
         buttonCancel.setOnClickListener {
@@ -76,7 +77,7 @@ class PhotoFragment internal constructor() : Fragment() {
 
     private fun encodeImage(file: File?): ByteArray? {
         val byteArrayOutputStream = ByteArrayOutputStream()
-        var bitmap = ScannerConstants.selectedImageBitmap
+        var bitmap = BitmapFactory.decodeFile(file?.absolutePath)
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
         return byteArrayOutputStream.toByteArray()
     }
