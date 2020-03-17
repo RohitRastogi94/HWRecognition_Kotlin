@@ -22,4 +22,12 @@
     <color name="icFocused">#DDFFFFFF</color>
     <color name="icPressed">#AAFFFFFF</color>
     <color name="tableHeader">#F0F0F0</color>
+    <color name="white">#FFFFFF</color>
+    <color name="white_40">#66FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="orange">#E55A28</color>
+
+    <color name="text_hint">#4D000000</color>
+    <color name="text_error">#FFFF0000</color>
+    <color name="input_text">#FF000F00</color>
 </resources>
