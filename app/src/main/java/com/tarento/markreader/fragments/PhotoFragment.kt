@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.tarento.markreader.DataResultActivity
 import com.tarento.markreader.R
 import com.tarento.markreader.ResultActivity
 import com.tarento.markreader.data.ApiClient
@@ -163,12 +164,11 @@ class PhotoFragment internal constructor() : Fragment() {
 
                     processResult?.let {
                         if (processResult.status.code == 200) {
-                            val intent = Intent(activity, ResultActivity::class.java)
+                            val intent = Intent(activity, DataResultActivity::class.java)
                             intent.putExtra("result", processResult)
                             startActivity(intent)
                             activity?.finish()
                         } else {
-
                             Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
                                 .show()
 

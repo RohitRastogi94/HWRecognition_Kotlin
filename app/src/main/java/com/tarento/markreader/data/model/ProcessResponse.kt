@@ -19,3 +19,4 @@ data class ProcessResponse(
     Serializable
 
 data class ProcessResponseData(val col: Int, val row: Int, val text: String) : Serializable
+

@@ -12,12 +12,6 @@ data class LoginResponse(
     @SerializedName("component") val component: String
 ) : Serializable
 
-data class Http(
-
-    @SerializedName("status") val status: Int
-) : Serializable
-
-
 data class Data(
 
     @SerializedName("school") val school: School,

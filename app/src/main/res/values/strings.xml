@@ -34,4 +34,24 @@
     <string name="cancel">Cancel</string>
     <string name="invalid_username">Enter username</string>
     <string name="invalid_password">Enter password</string>
+    
+    <string name="verify_scanned_data">Verify scanned data</string>
+    <string name="complete_these_steps_to_submit_marks">Complete these steps to submit marks</string>
+    <string name="verify_subject_details">Verify Subject Details</string>
+    <string name="verify_marks_subject">Verify Marks &amp; Subject</string>
+
+    <string name="student_details">Student details</string>
+    <string name="class_text">Class</string>
+    <string name="roll_no">Roll No.</string>
+    <string name="marks">Marks</string>
+    <string name="edit">EDIT</string>
+    <string name="summary">summary</string>
+    <string name="submit">SUBMIT</string>
+
+    <string name="booklet_id">Booklet ID</string>
+    <string name="student_id">Student ID</string>
+    <string name="test_id">Test ID</string>
+    <string name="test_date">Test Date</string>
+    <string name="subject">Subject</string>
+    <string name="next">NEXT</string>
 </resources>
