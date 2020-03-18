@@ -13,7 +13,8 @@ import java.util.concurrent.TimeUnit
 
 class ApiClient {
     companion object {
-        val BASE_URL = "http://52.11.90.50/"
+        //val BASE_URL = "http://52.11.90.50/"
+        val BASE_URL = "http://ocr.anuvaad.org"
         var retrofit: Retrofit? = null
         fun getClient(): Retrofit? {
             if (retrofit == null) {
