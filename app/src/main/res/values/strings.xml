@@ -54,4 +54,6 @@
     <string name="test_date">Test Date</string>
     <string name="subject">Subject</string>
     <string name="next">NEXT</string>
+    <string name="colon">:</string>
+    <string name="no_tests_for_given_date">No tests  for given date</string>
 </resources>

@@ -1,6 +1,7 @@
-package com.tarento.markreader.data.model
+package com.tarento.markreader.data.model.login
 
 import com.google.gson.annotations.SerializedName
+import com.tarento.markreader.data.model.Http
 import java.io.Serializable
 
 data class LoginResponse(

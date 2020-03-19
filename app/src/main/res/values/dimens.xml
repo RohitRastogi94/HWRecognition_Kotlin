@@ -39,4 +39,5 @@
 
     <dimen name="text_large">18sp</dimen>
     <dimen name="text_medium">16sp</dimen>
+    <dimen name="text_small">13sp</dimen>
 </resources>

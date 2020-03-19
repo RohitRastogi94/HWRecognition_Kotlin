@@ -38,8 +38,7 @@
                     android:id="@+id/editStudentId"
                     style="@style/BaseEditText"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:layout_marginTop="10dp" />
+                    android:layout_height="wrap_content" />
             </LinearLayout>
 
             <LinearLayout
@@ -48,11 +47,27 @@
                 android:layout_marginTop="20dp"
                 android:orientation="vertical">
 
-                <TextView
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/test_id"
-                    android:textColor="@color/black" />
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:text="@string/test_id"
+                        android:textColor="@color/black" />
+
+                    <TextView
+                        android:id="@+id/textNoTestId"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:text="@string/no_tests_for_given_date"
+                        android:textColor="@color/red"
+                        android:visibility="gone"/>
+                </RelativeLayout>
 
                 <EditText
                     android:id="@+id/editTestId"
@@ -75,7 +90,7 @@
 
                 <EditText
                     android:id="@+id/editExamDate"
-                    style="@style/BaseEditText"
+                    style="@style/BaseEditTextDisabled"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
 
@@ -93,6 +108,25 @@
         android:orientation="horizontal">
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonCancel"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:textColor="@color/black"
+            app:strokeColor="@color/colorGray_20"
+            android:visibility="gone"/>
+        <LinearLayout
+            android:id="@+id/linearEditNextHolder"
+            android:visibility="visible"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonEditSubject"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.75"
@@ -107,6 +141,7 @@
             android:layout_height="30dp" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonMoveNext"
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -114,6 +149,7 @@
             android:text="@string/next"
             android:textColor="@color/orange"
             app:strokeColor="@color/orange" />
+        </LinearLayout>
     </LinearLayout>
 
 </RelativeLayout>

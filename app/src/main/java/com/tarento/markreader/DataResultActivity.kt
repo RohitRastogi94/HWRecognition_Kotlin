@@ -3,81 +3,36 @@ package com.tarento.markreader
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.WindowManager
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.google.android.material.tabs.TabLayoutMediator
-import com.tarento.markreader.data.model.ProcessResponse
+import com.tarento.markreader.data.model.CheckOCRResponse
 import com.tarento.markreader.data.model.ProcessResult
-import com.tarento.markreader.fragments.DataFragment
 import com.tarento.markreader.fragments.MarksAndSubjectFragment
 import com.tarento.markreader.fragments.SubjectDetailsFragment
 import kotlinx.android.synthetic.main.activity_data_result.*
 
-class DataResultActivity : AppCompatActivity() {
+class DataResultActivity : AppCompatActivity() , SubjectDetailsFragment.SubjectSummaryListener {
 
+    var result:ProcessResult? = null
+    var checkOCRResponse: CheckOCRResponse? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_data_result)
 
-        val result = intent.getSerializableExtra("result") as ProcessResult
+        result = intent.getSerializableExtra("result") as ProcessResult
 
-        if (result.response == null || result.response.size == 0) {
+        if (result != null && (result!!.response == null || result!!.response.size == 0)) {
             finish()
             return
         }
 
         //Default select Subject Fragment
-        linearVerifySubject.setBackgroundResource(R.color.white)
-        linearVerifyMark.setBackgroundResource(R.color.colorGray_40)
-        txtVerifySubject.setTextColor(resources.getColor(R.color.black))
-        txtVerifyMark.setTextColor(resources.getColor(R.color.text_hint))
-        val fragment = SubjectDetailsFragment()
-        val bundle = Bundle()
-        bundle.putSerializable("data", result.response[0])
-        fragment.arguments = bundle
-        val fragmentTransaction =
-            supportFragmentManager.beginTransaction().replace(
-                R.id.verify_scan_data_fragment_container,
-                fragment
-            )
-        fragmentTransaction.commit()
+        verifySubjectStep1()
 
         linearVerifySubject.setOnClickListener {
-            linearVerifySubject.setBackgroundResource(R.color.white)
-            linearVerifyMark.setBackgroundResource(R.color.colorGray_40)
-            txtVerifySubject.setTextColor(resources.getColor(R.color.black))
-            txtVerifyMark.setTextColor(resources.getColor(R.color.text_hint))
-            val fragment = SubjectDetailsFragment()
-            val bundle = Bundle()
-            bundle.putSerializable("data", result.response[0])
-            fragment.arguments = bundle
-            val fragmentTransaction =
-                supportFragmentManager.beginTransaction().replace(
-                    R.id.verify_scan_data_fragment_container,
-                    fragment
-                )
-            fragmentTransaction.commit()
+            verifySubjectStep1()
 
         }
         linearVerifyMark.setOnClickListener {
-            linearVerifySubject.setBackgroundResource(R.color.colorGray_40)
-            linearVerifyMark.setBackgroundResource(R.color.white)
-            txtVerifySubject.setTextColor(resources.getColor(R.color.text_hint))
-            txtVerifyMark.setTextColor(resources.getColor(R.color.black))
-
-            val fragment = MarksAndSubjectFragment()
-            val bundle = Bundle()
-            bundle.putSerializable("data", result.response[1])
-            fragment.arguments = bundle
-
-            val fragmentTransaction =
-                supportFragmentManager.beginTransaction().replace(
-                    R.id.verify_scan_data_fragment_container,
-                    fragment
-                )
-            fragmentTransaction.commit()
+            verifyMarksReceivedStep2()
         }
 
 
@@ -90,6 +45,48 @@ class DataResultActivity : AppCompatActivity() {
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)*/
     }
 
+    private fun verifyMarksReceivedStep2() {
+        linearVerifySubject.setBackgroundResource(R.color.colorGray_40)
+        linearVerifyMark.setBackgroundResource(R.color.white)
+        txtVerifySubject.setTextColor(resources.getColor(R.color.green))
+        txtVerifyMark.setTextColor(resources.getColor(R.color.black))
+        textStep1.setBackgroundResource(R.drawable.ic_tick)
+        textStep1.text = ""
+        textStep2.setBackgroundResource(R.drawable.round_small_shape)
+        val fragment = MarksAndSubjectFragment()
+        val bundle = Bundle()
+        bundle.putSerializable("data", result)
+        bundle.putSerializable("dataOCRResponse", checkOCRResponse)
+        fragment.arguments = bundle
+
+        val fragmentTransaction =
+            supportFragmentManager.beginTransaction().replace(
+                R.id.verify_scan_data_fragment_container,
+                fragment
+            )
+        fragmentTransaction.commit()
+    }
+
+    private fun verifySubjectStep1() {
+        linearVerifySubject.setBackgroundResource(R.color.white)
+        linearVerifyMark.setBackgroundResource(R.color.colorGray_40)
+        txtVerifySubject.setTextColor(resources.getColor(R.color.black))
+        txtVerifyMark.setTextColor(resources.getColor(R.color.text_hint))
+        textStep1.setBackgroundResource(R.drawable.round_small_shape)
+        textStep1.text = "1"
+        textStep2.setBackgroundResource(R.drawable.round_small_disabled_shape)
+        val fragment = SubjectDetailsFragment()
+        val bundle = Bundle()
+        bundle.putSerializable("data", result)
+        fragment.arguments = bundle
+        val fragmentTransaction =
+            supportFragmentManager.beginTransaction().replace(
+                R.id.verify_scan_data_fragment_container,
+                fragment
+            )
+        fragmentTransaction.commit()
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         super.onOptionsItemSelected(item)
 
@@ -99,6 +96,14 @@ class DataResultActivity : AppCompatActivity() {
             return true
         }
         return false
+    }
+
+    override fun getCheckOCRResponse(ocrResponse: CheckOCRResponse) {
+        checkOCRResponse = ocrResponse
+    }
+
+    override fun moveToMarksReceived() {
+        verifyMarksReceivedStep2()
     }
 }
 

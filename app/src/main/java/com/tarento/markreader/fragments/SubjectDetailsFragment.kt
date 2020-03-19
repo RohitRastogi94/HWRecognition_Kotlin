@@ -1,6 +1,7 @@
 package com.tarento.markreader.fragments
 
 import android.app.DatePickerDialog
+import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
@@ -16,8 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tarento.markreader.R
 import com.tarento.markreader.data.ApiClient
 import com.tarento.markreader.data.OCRService
-import com.tarento.markreader.data.model.FetchExamsResponse
-import com.tarento.markreader.data.model.ProcessResponse
+import com.tarento.markreader.data.model.*
 import com.tarento.markreader.data.preference.AppPreferenceHelper
 import com.tarento.markreader.utils.ProgressBarUtil
 import kotlinx.android.synthetic.main.fragment_subject_details.*
@@ -33,16 +33,31 @@ class SubjectDetailsFragment : Fragment() {
         val TAG = SubjectDetailsFragment.javaClass.canonicalName
     }
 
+    var processResult:ProcessResult? = null
     var data: ProcessResponse? = null
     var fetchExamsResponse: FetchExamsResponse? = null
-    var schoolCode: String? = null
-    var examDate: String? = null
+    var checkOCRResponse:CheckOCRResponse?= null
+    private var schoolCode: String? = null
+    private var examDate: String? = null
+    private var studentCode:String? = null
+    private var examId:String? = null
+    var subjectSummaryListener:SubjectSummaryListener? = null
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if(context is SubjectSummaryListener){
+            subjectSummaryListener = context
+        }else{
+            Log.d(TAG,"Implement Subject summary listener")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            data = it.getSerializable("data") as ProcessResponse
+            processResult = it.getSerializable("data") as ProcessResult
+            data = processResult!!.response[0]
         }
 
 
@@ -59,8 +74,8 @@ class SubjectDetailsFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         examDate = data?.data?.get(3)?.text
-
-        editStudentId.setText(data?.data?.get(2)?.text)
+        studentCode = data?.data?.get(2)?.text
+        editStudentId.setText(studentCode)
         editExamDate.setText(examDate)
 
         editTestId.setOnClickListener {
@@ -87,13 +102,39 @@ class SubjectDetailsFragment : Fragment() {
                         }
                         examDate = "$dayText/$monthText/$year"
                         editExamDate.setText(examDate)
+                        fetchExamList(examDate)
                     }, mYear, mMonth, mDay
                 )
             }
             mDatePicker?.setTitle("Select Exam date");
             mDatePicker?.show();
         }
+        disableEditMode()
+        buttonEditSubject.setOnClickListener {
+            editExamDate.isClickable = true
+            editStudentId.isEnabled = true
+            editExamDate.isEnabled = true
+            editStudentId.setSelection(editStudentId.text.length)
+            linearEditNextHolder.visibility = View.GONE
+            buttonCancel.visibility = View.VISIBLE
+        }
+        buttonCancel.setOnClickListener {
+            disableEditMode()
+            buttonCancel.visibility = View.GONE
+            linearEditNextHolder.visibility = View.VISIBLE
+        }
+
+        buttonMoveNext.setOnClickListener {
+            subjectSummaryListener?.moveToMarksReceived()
+        }
+
         fetchExamList(examDate)
+    }
+
+    private fun disableEditMode() {
+        editExamDate.isClickable = false
+        editExamDate.isEnabled = false
+        editStudentId.isEnabled = false
     }
 
     private fun fetchExamList(examDate: String?) {
@@ -129,7 +170,21 @@ class SubjectDetailsFragment : Fragment() {
                     fetchExamsResponse?.let {
                         if (fetchExamsResponse!!.http.status == 200) {
                             if (fetchExamsResponse!!.data.isNotEmpty()) {
-                                editTestId.setText(fetchExamsResponse!!.data[0].exam_code)
+                                textNoTestId?.visibility = View.GONE
+                                examId = fetchExamsResponse!!.data[0].exam_code
+                                editTestId.setText(examId)
+                                if(editStudentId.text.isNotBlank()) {
+                                    checkOCR(
+                                        editTestId.text.toString(),
+                                        editStudentId.text.toString()
+                                    )
+                                }
+                            }else{
+                                textNoTestId.visibility = View.VISIBLE
+                                examId = ""
+                                editTestId.setText("")
+                                Toast.makeText(activity, "No tests for given date", Toast.LENGTH_SHORT)
+                                    .show()
                             }
                         } else {
                             Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
@@ -169,6 +224,7 @@ class SubjectDetailsFragment : Fragment() {
             editTestId.setText(it.exam_code)
             if (popupWindow.isShowing)
                 popupWindow.dismiss()
+            checkOCR(editTestId.text.toString(), editStudentId.text.toString())
 
         }
 
@@ -177,4 +233,59 @@ class SubjectDetailsFragment : Fragment() {
             popupWindow.showAsDropDown(view, 0, 0)
 
     }
+
+    private fun checkOCR(examCode:String, studentCode:String ) {
+        val apiInterface: OCRService = ApiClient.getClient()!!.create(OCRService::class.java)
+        val checkOCRRequest = CheckOCRRequest(examCode,studentCode, processResult!!)
+        //Log.d(TAG, "getGetProcessData() called with: data = [$requestBody]")
+        val hero = apiInterface.checkOCR(checkOCRRequest)
+
+        hero.enqueue(object : Callback<CheckOCRResponse> {
+            override fun onFailure(call: Call<CheckOCRResponse>, t: Throwable) {
+                Log.e(SubjectDetailsFragment.TAG, "onResponse: Failuer", t)
+
+                Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
+                //.show()
+
+                ProgressBarUtil.dismissProgressDialog()
+            }
+
+            override fun onResponse(
+                call: Call<CheckOCRResponse>,
+                response: Response<CheckOCRResponse>
+            ) {
+                Log.d(SubjectDetailsFragment.TAG, "onResponse: ${response.isSuccessful}")
+                if (response != null && response.isSuccessful && response.body() != null) {
+                    ProgressBarUtil.dismissProgressDialog()
+                    Log.d(SubjectDetailsFragment.TAG, "onResponse: ${response.body()}")
+                    checkOCRResponse = response.body()
+
+                    checkOCRResponse?.let {
+                        if (checkOCRResponse != null){
+                            if(checkOCRResponse!!.http.status == 200) {
+                                subjectSummaryListener?.getCheckOCRResponse(checkOCRResponse!!)
+                            }else{
+                                Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
+                                    .show()
+
+                            }
+                        } else {
+                            Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
+                                .show()
+
+                        }
+
+                    }
+                }
+            }
+
+        })
+
+    }
+
+    interface SubjectSummaryListener{
+        fun getCheckOCRResponse(ocrResponse: CheckOCRResponse)
+        fun moveToMarksReceived()
+    }
+
 }

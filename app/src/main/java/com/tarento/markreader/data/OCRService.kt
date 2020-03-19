@@ -1,8 +1,10 @@
 package com.tarento.markreader.data
 
+import com.tarento.markreader.data.model.CheckOCRRequest
+import com.tarento.markreader.data.model.CheckOCRResponse
 import com.tarento.markreader.data.model.FetchExamsResponse
-import com.tarento.markreader.data.model.LoginRequest
-import com.tarento.markreader.data.model.LoginResponse
+import com.tarento.markreader.data.model.login.LoginRequest
+import com.tarento.markreader.data.model.login.LoginResponse
 import com.tarento.markreader.data.model.ProcessResult
 import okhttp3.RequestBody
 import retrofit2.Call
@@ -28,4 +30,8 @@ interface OCRService {
     @Headers("Content-Type: application/json")
     @GET("/app/v1/fetch-exams?")
     fun fetchExams(@Query("school") school_code:String, @Query("exam_date") exam_date:String): Call<FetchExamsResponse>
+
+    @Headers("Content-Type: application/json")
+    @POST("/app/v1/check-ocr")
+    fun checkOCR(@Body body: CheckOCRRequest): Call<CheckOCRResponse>
 }

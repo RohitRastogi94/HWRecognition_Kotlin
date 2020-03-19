@@ -10,8 +10,8 @@ import android.widget.EditText
 import android.widget.Toast
 import com.tarento.markreader.data.ApiClient
 import com.tarento.markreader.data.OCRService
-import com.tarento.markreader.data.model.LoginRequest
-import com.tarento.markreader.data.model.LoginResponse
+import com.tarento.markreader.data.model.login.LoginRequest
+import com.tarento.markreader.data.model.login.LoginResponse
 
 import com.tarento.markreader.utils.ProgressBarUtil
 import com.tarento.markreader.data.preference.AppPreferenceHelper
@@ -90,7 +90,10 @@ class LoginActivity : AppCompatActivity() {
     private fun loginRequest(username: String, password: String) {
         val apiInterface: OCRService = ApiClient.getClient()!!.create(OCRService::class.java)
 
-        val loginRequest = LoginRequest("rahul", "welcome")
+        val loginRequest = LoginRequest(
+            "rahul",
+            "welcome"
+        )
         Log.d(TAG, "request login() called with: data = [$loginRequest]")
         val hero = apiInterface.login(loginRequest)
 
