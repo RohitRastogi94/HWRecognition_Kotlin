@@ -34,7 +34,7 @@
     <string name="cancel">Cancel</string>
     <string name="invalid_username">Enter username</string>
     <string name="invalid_password">Enter password</string>
-    
+
     <string name="verify_scanned_data">Verify scanned data</string>
     <string name="complete_these_steps_to_submit_marks">Complete these steps to submit marks</string>
     <string name="verify_subject_details">Verify Subject Details</string>

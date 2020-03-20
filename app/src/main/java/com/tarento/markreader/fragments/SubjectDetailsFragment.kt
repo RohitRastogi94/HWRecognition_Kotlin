@@ -172,17 +172,17 @@ class SubjectDetailsFragment : Fragment() {
                             if (fetchExamsResponse!!.data.isNotEmpty()) {
                                 textNoTestId?.visibility = View.GONE
                                 examId = fetchExamsResponse!!.data[0].exam_code
-                                editTestId.setText(examId)
-                                if(editStudentId.text.isNotBlank()) {
+                                editTestId?.setText(examId)
+                                if(editStudentId?.text?.isNotBlank()!!) {
                                     checkOCR(
                                         editTestId.text.toString(),
                                         editStudentId.text.toString()
                                     )
                                 }
                             }else{
-                                textNoTestId.visibility = View.VISIBLE
+                                textNoTestId?.visibility = View.VISIBLE
                                 examId = ""
-                                editTestId.setText("")
+                                editTestId?.setText("")
                                 Toast.makeText(activity, "No tests for given date", Toast.LENGTH_SHORT)
                                     .show()
                             }

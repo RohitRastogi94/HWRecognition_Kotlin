@@ -35,4 +35,5 @@
     <color name="colorGray_20">#66000000</color>
     <color name="green">#06C3B1</color>
     <color name="red">#E82113</color>
+    <color name="dark_green">#0F8715</color>
 </resources>

@@ -35,14 +35,6 @@ class DataResultActivity : AppCompatActivity() , SubjectDetailsFragment.SubjectS
             verifyMarksReceivedStep2()
         }
 
-
-       /* view_pager.adapter = SectionsPagerAdapter(this, result.response)
-
-        TabLayoutMediator(tabs, view_pager) { tab, position ->
-            tab.text = result.response[position].header.title ?: ""
-        }.attach()
-
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)*/
     }
 
     private fun verifyMarksReceivedStep2() {
@@ -107,18 +99,3 @@ class DataResultActivity : AppCompatActivity() , SubjectDetailsFragment.SubjectS
     }
 }
 
-/*
-class SectionsPagerAdapter(context: FragmentActivity, val response: ArrayList<ProcessResponse>) :
-    FragmentStateAdapter(context) {
-
-    override fun getItemCount() = response.size
-
-    override fun createFragment(position: Int): Fragment {
-        val fragment = DataFragment()
-        val bundle = Bundle()
-        bundle.putSerializable("data", response[position])
-        fragment.arguments = bundle
-        return fragment
-    }
-}
-*/

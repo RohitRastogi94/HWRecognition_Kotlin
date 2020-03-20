@@ -8,10 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.RelativeLayout
-import android.widget.TableRow
-import android.widget.Toast
+import android.widget.*
 import androidx.fragment.app.Fragment
 import com.tarento.markreader.R
 import com.tarento.markreader.data.ApiClient
@@ -24,6 +21,7 @@ import kotlinx.android.synthetic.main.fragment_subject_details.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import kotlin.math.max
 
 /**
  * A simple [Fragment] subclass.
@@ -134,6 +132,7 @@ class MarksAndSubjectFragment : Fragment() {
     }
 
 
+/*
     @SuppressLint("ResourceType")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -184,28 +183,34 @@ class MarksAndSubjectFragment : Fragment() {
 
         return ""
     }
+*/
 
-/*
+    fun getMarksHeader(response: List<CheckOCRResponse.Response>?) =
+        response?.first {
+            println("header ${it.header.title}")
+            it.header.title.equals("Marks Received", true)
+        }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         renderTable()
 
     }
 
-    fun getMarksHeader(response: ProcessResponse?) =
-
-        response?.apply {
-            println("header ${header.title}")
-            header.title.equals("Marks Received", true)
-        }
-
+    private val headerList = arrayOf(
+        "પ્રટનમ ",
+        "અધ્યયન નિષ્પતિ કમ ",
+        "કુલ ગુણ ",
+        "મેળવેલ ગુણ ",
+        "ઉપચારપાત્ર અધ્યયન નિષ્પતિ "
+    )
 
     fun renderTable() {
-        var result: ProcessResult? = data
-
-        var markResponseItem = getMarksHeader(result?.response?.first()) ?: return
+        var markResponseItem = getMarksHeader(checkOCRResponse?.data?.ocr_data?.response) ?: return
         var columns = markResponseItem.header.col
         val row = markResponseItem.header.row
+
+        columns = 5
 
         for (i in 0 until row) {
 
@@ -215,41 +220,66 @@ class MarksAndSubjectFragment : Fragment() {
             tableRow.weightSum = columns.toFloat()
 
             for (j in 0 until columns) {
-                val view = LayoutInflater.from(activity).inflate(
-                    R.layout.table_row_item,
-                    null
-                ) as RelativeLayout
+                if (j > 3 && i > 0) {
+                    val view = LayoutInflater.from(activity).inflate(
+                        R.layout.table_row_item_result,
+                        null
+                    ) as RelativeLayout
+                    tableRow.addView(view)
+                    val imgResult = view.findViewById<ImageView>(R.id.imgResult)
+                    val maxMarks = getData(markResponseItem.data, i, j - 2)
+                    val obtainedMarks = getData(markResponseItem.data, i, j - 1)
+                    if (maxMarks.isNotEmpty() && obtainedMarks.isNotEmpty()) {
+                        val pointReceived =
+                            if (obtainedMarks.contentEquals("る.0")) 3F else obtainedMarks.toFloat()
+                        if (pointReceived >= 0 && pointReceived <= maxMarks.toFloat()) {
+                            imgResult.setImageResource(R.drawable.ic_pass)
+                        } else {
+                            imgResult.setImageResource(R.drawable.ic_failed)
+                        }
+                    }
 
-                tableRow.addView(view)
-
-                val editText = view.findViewById<EditText>(R.id.dataField)
-                editText.setText(getData(markResponseItem.data, i, j))
-                if (j == 0 || (columns > 2 && i == 0)) {
-                    view.setBackgroundResource(R.drawable.cell_shape_gray)
-                    editText.setEnabled(false)
-                    editText.isClickable = false
-                    editText.setTextColor(Color.BLACK)
-                    editText.setTypeface(null, Typeface.BOLD)
                 } else {
-                    editText.setEnabled(false)
-                    editText.isClickable = false
-                    editText.setTextColor(Color.BLACK)
-                    editText.setTypeface(null, Typeface.NORMAL)
+                    val view = LayoutInflater.from(activity).inflate(
+                        R.layout.table_row_item,
+                        null
+                    ) as RelativeLayout
+
+                    tableRow.addView(view)
+
+                    val editText = view.findViewById<EditText>(R.id.dataField)
+                    var text = getData(markResponseItem.data, i, j)
+                    if (i == 0) {//&& text.isEmpty()) {
+                        editText.setText(headerList[j])
+                    } else {
+                        editText.setText(text)
+                    }
+                    if (j == 0 || (columns > 2 && i == 0)) {
+                        view.setBackgroundResource(R.drawable.cell_shape_gray)
+                        editText.setEnabled(false)
+                        editText.isClickable = false
+                        editText.setTextColor(Color.BLACK)
+                        editText.setTypeface(null, Typeface.BOLD)
+                    } else {
+                        editText.setEnabled(false)
+                        editText.isClickable = false
+                        editText.setTextColor(Color.BLACK)
+                        editText.setTypeface(null, Typeface.NORMAL)
+                    }
+
                 }
-
-
             }
             table_layout.addView(tableRow)
         }
     }
 
-    private fun getData(data: ArrayList<ProcessResponseData>, row: Int, colum: Int): String {
+    private fun getData(data: List<CheckOCRResponse.Response.Data>?, row: Int, colum: Int): String {
         data?.forEachIndexed { index, processResponseData ->
-            if ((processResponseData.col == colum) and (processResponseData.row == row)) return processResponseData.text
+            if ((processResponseData.col == colum) and (processResponseData.row == row))
+                return processResponseData.title
         }
 
         return ""
     }
-*/
 
 }
