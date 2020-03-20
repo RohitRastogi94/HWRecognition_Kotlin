@@ -15,31 +15,31 @@ data class CheckOCRResponse(
         @SerializedName("ocr_data") val ocr_data: Ocr_data,
         @SerializedName("student_code") val student_code: String,
         @SerializedName("student_name") val student_name: String
-    )
+    ):Serializable
 
     data class Ocr_data(
 
         @SerializedName("response") val response: List<Response>,
         @SerializedName("status") val status: Status
-    )
+    ):Serializable
 
     data class Status(
 
         @SerializedName("code") val code: Int,
         @SerializedName("message") val message: String
-    )
+    ):Serializable
 
     data class Response(
 
         @SerializedName("data") val data: List<Data>,
         @SerializedName("header") val header: Header
-    ) {
+    ):Serializable {
         data class Data(
 
             @SerializedName("col") val col: Int,
             @SerializedName("row") val row: Int,
             @SerializedName("text") val title: String
-        )
+        ):Serializable
 
     }
 
@@ -48,6 +48,6 @@ data class CheckOCRResponse(
         @SerializedName("col") val col: Int,
         @SerializedName("row") val row: Int,
         @SerializedName("title") val title: String
-    )
+    ):Serializable
 }
 

@@ -32,7 +32,7 @@ class DataResultActivity : AppCompatActivity() , SubjectDetailsFragment.SubjectS
 
         }
         linearVerifyMark.setOnClickListener {
-            verifyMarksReceivedStep2()
+            //verifyMarksReceivedStep2()
         }
 
     }

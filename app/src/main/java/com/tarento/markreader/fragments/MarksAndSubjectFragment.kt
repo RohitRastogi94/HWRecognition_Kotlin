@@ -1,6 +1,7 @@
 package com.tarento.markreader.fragments
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
@@ -11,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import com.tarento.markreader.R
+import com.tarento.markreader.SummaryActivity
 import com.tarento.markreader.data.ApiClient
 import com.tarento.markreader.data.OCRService
 import com.tarento.markreader.data.model.*
@@ -71,6 +73,15 @@ class MarksAndSubjectFragment : Fragment() {
             buttonCancelMark.visibility = View.GONE
             linearEditSummaryHolder.visibility = View.VISIBLE
 
+        }
+
+        buttonSummary.setOnClickListener {
+            var intent = Intent(activity, SummaryActivity::class.java)
+            val bundle = Bundle()
+            bundle.putSerializable("data", processResult)
+            bundle.putSerializable("dataOCRResponse", checkOCRResponse)
+            intent.putExtras(bundle)
+            startActivity(intent)
         }
     }
 
