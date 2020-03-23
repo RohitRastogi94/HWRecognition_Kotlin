@@ -119,6 +119,7 @@ class LoginActivity : AppCompatActivity() {
                     loginResponse?.let {
                         if (loginResponse.http.status == 200) {
                             var appPreferenceHelper = AppPreferenceHelper(applicationContext)
+                            appPreferenceHelper.removePreference()
                             appPreferenceHelper.setSchoolCode(loginResponse.data.school.school_code)
                             appPreferenceHelper.setTeacherCode(loginResponse.data.teacher.teacher_code)
                             startActivity(

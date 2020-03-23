@@ -19,6 +19,7 @@ import com.tarento.markreader.data.ApiClient
 import com.tarento.markreader.data.OCRService
 import com.tarento.markreader.data.model.*
 import com.tarento.markreader.data.preference.AppPreferenceHelper
+import com.tarento.markreader.data.preference.PreferenceHelper
 import com.tarento.markreader.utils.ProgressBarUtil
 import kotlinx.android.synthetic.main.fragment_subject_details.*
 import retrofit2.Callback
@@ -42,6 +43,8 @@ class SubjectDetailsFragment : Fragment() {
     private var studentCode:String? = null
     private var examId:String? = null
     var subjectSummaryListener:SubjectSummaryListener? = null
+    var preferenceHelper: PreferenceHelper? = null
+    var dataIndex:Int = 0
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -57,11 +60,18 @@ class SubjectDetailsFragment : Fragment() {
 
         arguments?.let {
             processResult = it.getSerializable("data") as ProcessResult
-            data = processResult!!.response[0]
+            dataIndex = getStudentSummary(processResult!!.response)!!
+            data = processResult!!.response[dataIndex]
         }
 
 
     }
+
+    fun getStudentSummary(response: List<ProcessResponse>?): Int? =
+        response?.indexOfFirst {
+            println("header ${it.header.title}")
+            it.header.title.equals("Student summary", true)
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -73,10 +83,21 @@ class SubjectDetailsFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        examDate = data?.data?.get(3)?.text
-        studentCode = data?.data?.get(2)?.text
+         preferenceHelper = activity?.applicationContext?.let { it ->
+            AppPreferenceHelper(
+                it
+            )
+        }
+        examDate =  preferenceHelper?.getExamDate()?: data?.data?.get(3)?.text
+        studentCode = preferenceHelper?.getStudentCode()?:data?.data?.get(2)?.text
         editStudentId.setText(studentCode)
         editExamDate.setText(examDate)
+        if(preferenceHelper?.getExamCodeList() != null){
+            fetchExamsResponse = preferenceHelper?.getExamCodeList()
+            updateExamCodeList()
+        }else {
+            fetchExamList(examDate)
+        }
 
         editTestId.setOnClickListener {
             showPopupDialog(editTestId)
@@ -116,19 +137,38 @@ class SubjectDetailsFragment : Fragment() {
             editExamDate.isEnabled = true
             editStudentId.setSelection(editStudentId.text.length)
             linearEditNextHolder.visibility = View.GONE
-            buttonCancel.visibility = View.VISIBLE
+            linearEditSubjectHolder.visibility = View.VISIBLE
         }
         buttonCancel.setOnClickListener {
             disableEditMode()
-            buttonCancel.visibility = View.GONE
+            linearEditSubjectHolder.visibility = View.GONE
             linearEditNextHolder.visibility = View.VISIBLE
+            studentCode = data?.data?.get(2)?.text
+            editStudentId.setText(studentCode)
+            if(examDate?.contentEquals(data?.data?.get(3)?.text.toString())!!){
+                examDate = data?.data?.get(3)?.text
+            }else{
+                examDate = data?.data?.get(3)?.text
+                fetchExamList(examDate)
+            }
+            editExamDate.setText(examDate)
         }
+
+        buttonSaveSubject.setOnClickListener {
+            disableEditMode()
+            linearEditSubjectHolder.visibility = View.GONE
+            linearEditNextHolder.visibility = View.VISIBLE
+
+            data?.data?.get(3)?.text = editExamDate.text.toString()
+            data?.data?.get(2)?.text = editStudentId.text.toString()
+        }
+
 
         buttonMoveNext.setOnClickListener {
-            subjectSummaryListener?.moveToMarksReceived()
+            checkOCR(editTestId.text.toString(), editStudentId.text.toString(), true)
         }
 
-        fetchExamList(examDate)
+
     }
 
     private fun disableEditMode() {
@@ -170,15 +210,9 @@ class SubjectDetailsFragment : Fragment() {
                     fetchExamsResponse?.let {
                         if (fetchExamsResponse!!.http.status == 200) {
                             if (fetchExamsResponse!!.data.isNotEmpty()) {
-                                textNoTestId?.visibility = View.GONE
-                                examId = fetchExamsResponse!!.data[0].exam_code
-                                editTestId?.setText(examId)
-                                if(editStudentId?.text?.isNotBlank()!!) {
-                                    checkOCR(
-                                        editTestId.text.toString(),
-                                        editStudentId.text.toString()
-                                    )
-                                }
+                                preferenceHelper?.setExamCodeList(fetchExamsResponse!!)
+                                updateExamCodeList()
+
                             }else{
                                 textNoTestId?.visibility = View.VISIBLE
                                 examId = ""
@@ -198,6 +232,19 @@ class SubjectDetailsFragment : Fragment() {
 
         })
 
+    }
+
+    fun updateExamCodeList(){
+        textNoTestId?.visibility = View.GONE
+        examId = preferenceHelper?.getExamCode()?:fetchExamsResponse!!.data[0].exam_code
+        editTestId?.setText(examId)
+        if(editStudentId?.text?.isNotBlank()!!) {
+            checkOCR(
+                editTestId.text.toString(),
+                editStudentId.text.toString(),
+                false
+            )
+        }
     }
 
 
@@ -224,7 +271,7 @@ class SubjectDetailsFragment : Fragment() {
             editTestId.setText(it.exam_code)
             if (popupWindow.isShowing)
                 popupWindow.dismiss()
-            checkOCR(editTestId.text.toString(), editStudentId.text.toString())
+            checkOCR(editTestId.text.toString(), editStudentId.text.toString(),false)
 
         }
 
@@ -234,11 +281,14 @@ class SubjectDetailsFragment : Fragment() {
 
     }
 
-    private fun checkOCR(examCode:String, studentCode:String ) {
+    private fun checkOCR(examCode:String, studentCode:String, moveToMarks: Boolean ) {
         val apiInterface: OCRService = ApiClient.getClient()!!.create(OCRService::class.java)
+        data?.data?.get(3)?.text = examDate.toString()
+        data?.data?.get(2)?.text = studentCode
         val checkOCRRequest = CheckOCRRequest(examCode,studentCode, processResult!!)
         //Log.d(TAG, "getGetProcessData() called with: data = [$requestBody]")
         val hero = apiInterface.checkOCR(checkOCRRequest)
+
 
         hero.enqueue(object : Callback<CheckOCRResponse> {
             override fun onFailure(call: Call<CheckOCRResponse>, t: Throwable) {
@@ -264,6 +314,12 @@ class SubjectDetailsFragment : Fragment() {
                         if (checkOCRResponse != null){
                             if(checkOCRResponse!!.http.status == 200) {
                                 subjectSummaryListener?.getCheckOCRResponse(checkOCRResponse!!)
+                                if(moveToMarks) {
+                                    preferenceHelper?.setStudentCode(editStudentId.text.toString())
+                                    preferenceHelper?.setExamCode(editTestId.text.toString())
+                                    preferenceHelper?.setExamDate(editExamDate.text.toString())
+                                    subjectSummaryListener?.moveToMarksReceived()
+                                }
                             }else{
                                 Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
                                     .show()

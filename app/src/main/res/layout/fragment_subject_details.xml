@@ -107,17 +107,36 @@
         android:gravity="bottom"
         android:orientation="horizontal">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonCancel"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:id="@+id/linearEditSubjectHolder"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/cancel"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:textColor="@color/black"
-            app:strokeColor="@color/colorGray_20"
-            android:visibility="gone"/>
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonCancel"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:layout_alignParentStart="true"
+                android:text="@string/cancel"
+                android:textColor="@color/black"
+                app:strokeColor="@color/colorGray_20" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonSaveSubject"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_height="wrap_content"
+                android:text="@string/save"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/green" />
+        </RelativeLayout>
+
         <LinearLayout
             android:id="@+id/linearEditNextHolder"
             android:visibility="visible"

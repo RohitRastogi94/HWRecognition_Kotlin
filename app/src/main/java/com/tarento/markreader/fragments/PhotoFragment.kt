@@ -18,6 +18,7 @@ import com.tarento.markreader.data.ApiClient
 import com.tarento.markreader.data.OCR
 import com.tarento.markreader.data.OCRService
 import com.tarento.markreader.data.model.ProcessResult
+import com.tarento.markreader.data.preference.AppPreferenceHelper
 import com.tarento.markreader.scanner.ScannerConstants
 import com.tarento.markreader.utils.ProgressBarUtil
 import kotlinx.android.synthetic.main.fragment_photo.*
@@ -164,6 +165,7 @@ class PhotoFragment internal constructor() : Fragment() {
 
                     processResult?.let {
                         if (processResult.status.code == 200) {
+                            activity?.applicationContext?.let { it1 -> AppPreferenceHelper(it1).clearStudentDetails() }
                             val intent = Intent(activity, DataResultActivity::class.java)
                             intent.putExtra("result", processResult)
                             startActivity(intent)

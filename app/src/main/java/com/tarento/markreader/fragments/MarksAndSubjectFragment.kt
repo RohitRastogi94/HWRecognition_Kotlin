@@ -31,15 +31,15 @@ import kotlin.math.max
 class MarksAndSubjectFragment : Fragment() {
 
     var processResult: ProcessResult? = null
-    var data: ProcessResponse? = null
     var checkOCRResponse: CheckOCRResponse? = null
+    var totalMarks:Float = 0F
+    var totalMarksSecured:Float = 0F
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
             processResult = it.getSerializable("data") as ProcessResult
-            data = processResult!!.response[1]
             checkOCRResponse = it.getSerializable("dataOCRResponse") as CheckOCRResponse
         }
     }
@@ -80,6 +80,8 @@ class MarksAndSubjectFragment : Fragment() {
             val bundle = Bundle()
             bundle.putSerializable("data", processResult)
             bundle.putSerializable("dataOCRResponse", checkOCRResponse)
+            bundle.putFloat("TotalMarks", totalMarks)
+            bundle.putFloat("TotalMarksSecured", totalMarksSecured)
             intent.putExtras(bundle)
             startActivity(intent)
         }
@@ -222,6 +224,8 @@ class MarksAndSubjectFragment : Fragment() {
         val row = markResponseItem.header.row
 
         columns = 5
+        totalMarks = 0F
+        totalMarksSecured = 0F
 
         for (i in 0 until row) {
 
@@ -243,6 +247,8 @@ class MarksAndSubjectFragment : Fragment() {
                     if (maxMarks.isNotEmpty() && obtainedMarks.isNotEmpty()) {
                         val pointReceived =
                             if (obtainedMarks.contentEquals("る.0")) 3F else obtainedMarks.toFloat()
+                        totalMarks += maxMarks.toFloat()
+                        totalMarksSecured +=pointReceived
                         if (pointReceived >= 0 && pointReceived <= maxMarks.toFloat()) {
                             imgResult.setImageResource(R.drawable.ic_pass)
                         } else {
