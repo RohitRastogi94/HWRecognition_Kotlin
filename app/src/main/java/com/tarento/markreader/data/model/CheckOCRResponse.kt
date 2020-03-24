@@ -38,7 +38,7 @@ data class CheckOCRResponse(
 
             @SerializedName("col") val col: Int,
             @SerializedName("row") val row: Int,
-            @SerializedName("text") val title: String
+            @SerializedName("text") var title: String
         ):Serializable
 
     }

@@ -1,6 +1,7 @@
 package com.tarento.markreader.fragments
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
@@ -11,6 +12,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.tarento.markreader.R
 import com.tarento.markreader.SummaryActivity
 import com.tarento.markreader.data.ApiClient
@@ -32,8 +36,11 @@ class MarksAndSubjectFragment : Fragment() {
 
     var processResult: ProcessResult? = null
     var checkOCRResponse: CheckOCRResponse? = null
-    var totalMarks:Float = 0F
-    var totalMarksSecured:Float = 0F
+    var totalMarks: Float = 0F
+    var totalMarksSecured: Float = 0F
+    val adapter = MarksListAdapter()
+    var updatedTableModel = mutableListOf<ResultTableModel>()
+    var responseIndex: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,15 +83,98 @@ class MarksAndSubjectFragment : Fragment() {
         }
 
         buttonSummary.setOnClickListener {
-            var intent = Intent(activity, SummaryActivity::class.java)
-            val bundle = Bundle()
-            bundle.putSerializable("data", processResult)
-            bundle.putSerializable("dataOCRResponse", checkOCRResponse)
-            bundle.putFloat("TotalMarks", totalMarks)
-            bundle.putFloat("TotalMarksSecured", totalMarksSecured)
-            intent.putExtras(bundle)
-            startActivity(intent)
+            var isValidMarks = true
+            if (!updatedTableModel.isNullOrEmpty()) {
+                totalMarks = 0F
+                totalMarksSecured = 0F
+                val markResponse = checkOCRResponse!!.data.ocr_data.response[this.responseIndex]
+                for (i in 0 until markResponse.header.row) {
+                    for (j in 0 until 5) {
+                        if (i > 0 && j == 3) {
+                            val processDataMax = getProcessData(markResponse.data, i, j - 1)
+                            val processData = getProcessData(markResponse.data, i, j)
+                            if (processData?.row == updatedTableModel[i].rowId) {
+                                updatedTableModel[i].columnValue.forEachIndexed { index, columnValues ->
+                                    if (columnValues.columnId == 3 && columnValues.columnId == processData.col) {
+                                        processData.title = columnValues.value.toString()
+
+                                        if (processData.title.isNotEmpty() && !processData.title.contentEquals(
+                                                "."
+                                            )
+                                        ) {
+                                            val pointReceived =
+                                                if (processData.title.contentEquals("る.0")) 3F else processData.title.toFloat()
+                                            val maxMarks = processDataMax?.title
+                                            if (maxMarks != null) {
+                                                totalMarks += maxMarks.toFloat()
+                                                totalMarksSecured += pointReceived
+                                                if (pointReceived in 0.0..maxMarks.toDouble()) {
+                                                    if (isValidMarks) {
+                                                        isValidMarks = true
+                                                    }
+                                                } else {
+                                                    isValidMarks = false
+                                                }
+                                            } else {
+                                                isValidMarks = false
+                                            }
+                                        } else {
+                                            isValidMarks = false
+                                        }
+                                        Log.i(
+                                            "TAG",
+                                            "Result:Max${processDataMax?.title}:${processData.title}"
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+            if(isValidMarks) {
+                var intent = Intent(activity, SummaryActivity::class.java)
+                val bundle = Bundle()
+                bundle.putSerializable("data", processResult)
+                bundle.putSerializable("dataOCRResponse", checkOCRResponse)
+                bundle.putFloat("TotalMarks", totalMarks)
+                bundle.putFloat("TotalMarksSecured", totalMarksSecured)
+                intent.putExtras(bundle)
+                startActivity(intent)
+            }else{
+                val summaryMessage =
+                    AlertDialog.Builder(activity).create()
+                summaryMessage.setTitle("Message")
+                summaryMessage.setMessage("Please enter valid marks")
+                summaryMessage.setCancelable(false)
+
+                summaryMessage.setButton(
+                    AlertDialog.BUTTON_POSITIVE,
+                    "Ok"
+                ) { dialog, which ->
+                    dialog.dismiss()
+                }
+                summaryMessage.show()
+            }
         }
+
+
+        val layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
+
+        recyclerMarks.adapter = adapter
+        recyclerMarks.layoutManager = layoutManager
+        recyclerMarks.addItemDecoration(
+            DividerItemDecoration(
+                requireContext(),
+                LinearLayoutManager.HORIZONTAL
+            )
+        )
+        adapter.onItemClickListener { resultTableModel, mutableList ->
+            Log.d("TAG", "ResultTable:$mutableList")
+            updatedTableModel = mutableList
+        }
+
     }
 
     private fun checkOCR(examCode: String, studentCode: String) {
@@ -198,8 +288,8 @@ class MarksAndSubjectFragment : Fragment() {
     }
 */
 
-    fun getMarksHeader(response: List<CheckOCRResponse.Response>?) =
-        response?.first {
+    fun getMarksHeader(response: List<CheckOCRResponse.Response>?): Int? =
+        response?.indexOfFirst {
             println("header ${it.header.title}")
             it.header.title.equals("Marks Received", true)
         }
@@ -219,9 +309,11 @@ class MarksAndSubjectFragment : Fragment() {
     )
 
     fun renderTable() {
-        var markResponseItem = getMarksHeader(checkOCRResponse?.data?.ocr_data?.response) ?: return
-        var columns = markResponseItem.header.col
+        responseIndex = getMarksHeader(checkOCRResponse?.data?.ocr_data?.response) ?: return
+        var markResponseItem = checkOCRResponse?.data?.ocr_data?.response?.get(responseIndex)
+        var columns = markResponseItem!!.header.col
         val row = markResponseItem.header.row
+        var taleDetail = mutableListOf<ResultTableModel>()
 
         columns = 5
         totalMarks = 0F
@@ -229,65 +321,96 @@ class MarksAndSubjectFragment : Fragment() {
 
         for (i in 0 until row) {
 
-            val tableRow =
-                LayoutInflater.from(activity).inflate(R.layout.table_row, null) as TableRow
-
-            tableRow.weightSum = columns.toFloat()
-
+            /*val tableRow = TableRow(activity)
+            tableRow.layoutParams = ViewGroup.LayoutParams(
+                TableRow.LayoutParams.MATCH_PARENT,
+                TableRow.LayoutParams.WRAP_CONTENT
+            )*/
+            //LayoutInflater.from(activity).inflate(R.layout.table_row, null) as TableRow
+            var columnValuesList = mutableListOf<ColumnValues>()
+            // tableRow.weightSum = columns.toFloat()
             for (j in 0 until columns) {
+                var columnVal = ColumnValues()
                 if (j > 3 && i > 0) {
-                    val view = LayoutInflater.from(activity).inflate(
+                    /*val view = LayoutInflater.from(activity).inflate(
                         R.layout.table_row_item_result,
                         null
                     ) as RelativeLayout
-                    tableRow.addView(view)
-                    val imgResult = view.findViewById<ImageView>(R.id.imgResult)
+                    var viewParams =
+                        TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f)
+                    tableRow.addView(view, viewParams)
+                    val imgResult = view.findViewById<ImageView>(R.id.imgResult)*/
                     val maxMarks = getData(markResponseItem.data, i, j - 2)
                     val obtainedMarks = getData(markResponseItem.data, i, j - 1)
                     if (maxMarks.isNotEmpty() && obtainedMarks.isNotEmpty()) {
                         val pointReceived =
                             if (obtainedMarks.contentEquals("る.0")) 3F else obtainedMarks.toFloat()
                         totalMarks += maxMarks.toFloat()
-                        totalMarksSecured +=pointReceived
+                        totalMarksSecured += pointReceived
+                        columnVal.columnId = j
+                        columnVal.maxMark = maxMarks.toFloat()
                         if (pointReceived >= 0 && pointReceived <= maxMarks.toFloat()) {
-                            imgResult.setImageResource(R.drawable.ic_pass)
+                            //imgResult.setImageResource(R.drawable.ic_pass)
+                            columnVal.value = "Pass"
                         } else {
-                            imgResult.setImageResource(R.drawable.ic_failed)
+                            //imgResult.setImageResource(R.drawable.ic_failed)
+                            columnVal.value = "Fail"
                         }
                     }
 
                 } else {
-                    val view = LayoutInflater.from(activity).inflate(
+                    /*val view = LayoutInflater.from(activity).inflate(
                         R.layout.table_row_item,
                         null
                     ) as RelativeLayout
 
-                    tableRow.addView(view)
 
-                    val editText = view.findViewById<EditText>(R.id.dataField)
+                    var viewParams =
+                        TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f)
+                    tableRow.addView(view, viewParams)
+
+                    val editText = view.findViewById<EditText>(R.id.dataField)*/
                     var text = getData(markResponseItem.data, i, j)
                     if (i == 0) {//&& text.isEmpty()) {
-                        editText.setText(headerList[j])
+                        //editText.setLines(2)
+                        //editText.setText(headerList[j])
+                        columnVal.columnId = j
+                        columnVal.value = headerList[j]
                     } else {
-                        editText.setText(text)
+                        //editText.setText(text)
+                        columnVal.columnId = j
+                        columnVal.value = text
                     }
-                    if (j == 0 || (columns > 2 && i == 0)) {
+                    /*if (j == 0 || (columns > 2 && i == 0)) {
                         view.setBackgroundResource(R.drawable.cell_shape_gray)
                         editText.setEnabled(false)
                         editText.isClickable = false
                         editText.setTextColor(Color.BLACK)
                         editText.setTypeface(null, Typeface.BOLD)
                     } else {
-                        editText.setEnabled(false)
-                        editText.isClickable = false
-                        editText.setTextColor(Color.BLACK)
-                        editText.setTypeface(null, Typeface.NORMAL)
-                    }
+                        if (j == 3) {
+                            editText.setTextColor(Color.BLACK)
+                            editText.setTypeface(null, Typeface.NORMAL)
+                        } else {
+                            editText.setEnabled(false)
+                            editText.isClickable = false
+                            editText.setTextColor(Color.BLACK)
+                            editText.setTypeface(null, Typeface.NORMAL)
+                        }
+                    }*/
 
                 }
+                columnValuesList.add(columnVal)
             }
-            table_layout.addView(tableRow)
+            var resultTableModel = ResultTableModel(i)
+            resultTableModel.columnValue = columnValuesList
+            taleDetail.add(resultTableModel)
+            //table_layout.addView(tableRow)
         }
+        Log.d("TAG", "Result:" + taleDetail.toString())
+
+        adapter.refreshListItem(taleDetail)
+
     }
 
     private fun getData(data: List<CheckOCRResponse.Response.Data>?, row: Int, colum: Int): String {
@@ -297,6 +420,19 @@ class MarksAndSubjectFragment : Fragment() {
         }
 
         return ""
+    }
+
+    private fun getProcessData(
+        data: List<CheckOCRResponse.Response.Data>?,
+        row: Int,
+        colum: Int
+    ): CheckOCRResponse.Response.Data? {
+        data?.forEachIndexed { index, processResponseData ->
+            if ((processResponseData.col == colum) and (processResponseData.row == row))
+                return processResponseData
+        }
+
+        return null
     }
 
 }

@@ -4,171 +4,187 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="@dimen/spacing_large"
-    android:orientation="vertical"
-    android:padding="@dimen/spacing_large">
+    android:layout_marginLeft="@dimen/spacing_large"
+    android:layout_marginRight="@dimen/spacing_large"
+    android:layout_marginBottom="@dimen/spacing_large"
+    android:paddingLeft="@dimen/spacing_small"
+    android:paddingRight="@dimen/spacing_small"
+    android:paddingBottom="@dimen/spacing_small">
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollViewContentHolder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/linearBottomHolder"
         android:fillViewport="true">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="20dp"
-            android:paddingBottom="20dp">
+            android:layout_height="match_parent">
 
             <LinearLayout
+                android:id="@+id/linearLayout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:orientation="vertical">
+                android:layout_height="0dp"
+                android:orientation="vertical"
+                android:paddingTop="20dp"
+                android:paddingBottom="20dp"
+                app:layout_constraintBottom_toTopOf="@+id/linearBottomHolder"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/student_id"
-                    android:textColor="@color/black" />
+                    android:layout_marginTop="20dp"
+                    android:orientation="vertical">
 
-                <EditText
-                    android:id="@+id/editStudentId"
-                    style="@style/BaseEditText"
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/student_id"
+                        android:textColor="@color/black" />
+
+                    <EditText
+                        android:id="@+id/editStudentId"
+                        style="@style/BaseEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="vertical">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:text="@string/test_id"
+                            android:textColor="@color/black" />
+
+                        <TextView
+                            android:id="@+id/textNoTestId"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:text="@string/no_tests_for_given_date"
+                            android:textColor="@color/red"
+                            android:visibility="gone" />
+                    </RelativeLayout>
+
+                    <EditText
+                        android:id="@+id/editTestId"
+                        style="@style/EditTextWithDropdown"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/test_date"
+                        android:textColor="@color/black" />
+
+                    <EditText
+                        android:id="@+id/editExamDate"
+                        style="@style/BaseEditTextDisabled"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:inputType="date" />
+                </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/linearBottomHolder"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:orientation="vertical">
+                android:layout_alignParentBottom="true"
+                android:gravity="bottom"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
 
                 <RelativeLayout
+                    android:id="@+id/linearEditSubjectHolder"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:visibility="gone">
 
-                    <TextView
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonCancel"
+                        style="?attr/materialButtonOutlinedStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentStart="true"
-                        android:text="@string/test_id"
-                        android:textColor="@color/black" />
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:text="@string/cancel"
+                        android:textColor="@color/black"
+                        app:strokeColor="@color/colorGray_20" />
 
-                    <TextView
-                        android:id="@+id/textNoTestId"
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonSaveSubject"
+                        style="?attr/materialButtonOutlinedStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        android:text="@string/no_tests_for_given_date"
-                        android:textColor="@color/red"
-                        android:visibility="gone"/>
+                        android:backgroundTint="@color/green"
+                        android:text="@string/save"
+                        android:textColor="@color/white" />
                 </RelativeLayout>
 
-                <EditText
-                    android:id="@+id/editTestId"
-                    style="@style/EditTextWithDropdown"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:orientation="vertical">
-
-                <TextView
+                <LinearLayout
+                    android:id="@+id/linearEditNextHolder"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/test_date"
-                    android:textColor="@color/black" />
+                    android:orientation="horizontal"
+                    android:visibility="visible">
 
-                <EditText
-                    android:id="@+id/editExamDate"
-                    style="@style/BaseEditTextDisabled"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonEditSubject"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.75"
+                        android:backgroundTint="@color/colorGray"
+                        android:text="@string/edit"
+                        android:textColor="@color/black"
+                        app:icon="@drawable/ic_edit"
+                        app:iconTint="@color/black" />
 
-                    android:inputType="date" />
+                    <View
+                        android:layout_width="40dp"
+                        android:layout_height="30dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonMoveNext"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/next"
+                        android:textColor="@color/orange"
+                        app:strokeColor="@color/orange" />
+                </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
-    </ScrollView>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
 
-    <LinearLayout
-        android:id="@+id/linearBottomHolder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:gravity="bottom"
-        android:orientation="horizontal">
-
-        <RelativeLayout
-            android:id="@+id/linearEditSubjectHolder"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:visibility="gone">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonCancel"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp"
-                android:layout_alignParentStart="true"
-                android:text="@string/cancel"
-                android:textColor="@color/black"
-                app:strokeColor="@color/colorGray_20" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonSaveSubject"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_height="wrap_content"
-                android:text="@string/save"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/green" />
-        </RelativeLayout>
-
-        <LinearLayout
-            android:id="@+id/linearEditNextHolder"
-            android:visibility="visible"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonEditSubject"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.75"
-            android:backgroundTint="@color/colorGray"
-            android:text="@string/edit"
-            android:textColor="@color/black"
-            app:icon="@drawable/ic_edit"
-            app:iconTint="@color/black" />
-
-        <View
-            android:layout_width="40dp"
-            android:layout_height="30dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonMoveNext"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/next"
-            android:textColor="@color/orange"
-            app:strokeColor="@color/orange" />
-        </LinearLayout>
-    </LinearLayout>
 
 </RelativeLayout>
