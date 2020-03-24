@@ -91,8 +91,8 @@ class LoginActivity : AppCompatActivity() {
         val apiInterface: OCRService = ApiClient.getClient()!!.create(OCRService::class.java)
 
         val loginRequest = LoginRequest(
-            "rahul",
-            "welcome"
+            username,
+            password
         )
         Log.d(TAG, "request login() called with: data = [$loginRequest]")
         val hero = apiInterface.login(loginRequest)
@@ -103,6 +103,7 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this@LoginActivity, "Some thing went wrong", Toast.LENGTH_SHORT)
                     .show()
                 ProgressBarUtil.dismissProgressDialog()
+                loading.visibility = View.GONE
             }
 
             override fun onResponse(
@@ -110,8 +111,10 @@ class LoginActivity : AppCompatActivity() {
                 response: Response<LoginResponse>
             ) {
                 Log.d(TAG, "onResponse: ${response.isSuccessful}")
+                ProgressBarUtil.dismissProgressDialog()
+                loading.visibility = View.GONE
                 if (response != null && response.isSuccessful && response.body() != null) {
-                    ProgressBarUtil.dismissProgressDialog()
+
                     Log.d(TAG, "onResponse: ${response.body()}")
 
                     val loginResponse = response.body()
@@ -134,12 +137,16 @@ class LoginActivity : AppCompatActivity() {
                                 this@LoginActivity,
                                 "Some thing went wrong",
                                 Toast.LENGTH_SHORT
-                            )
-                                .show()
-
+                            ).show()
                         }
 
                     }
+                }else{
+                    Toast.makeText(
+                        this@LoginActivity,
+                        "Invalid credentials",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
 

@@ -88,8 +88,8 @@ class SummaryActivity : AppCompatActivity() {
                 response: Response<SaveOCRResponse>
             ) {
                 Log.d(SubjectDetailsFragment.TAG, "onResponse: ${response.isSuccessful}")
+                ProgressBarUtil.dismissProgressDialog()
                 if (response != null && response.isSuccessful && response.body() != null) {
-                    ProgressBarUtil.dismissProgressDialog()
                     Log.d(SubjectDetailsFragment.TAG, "onResponse: ${response.body()}")
                     saveOCRResponse = response.body()
 
@@ -136,6 +136,13 @@ class SummaryActivity : AppCompatActivity() {
                         }
 
                     }
+                } else {
+                    Toast.makeText(
+                        this@SummaryActivity,
+                        "Some thing went wrong",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
                 }
             }
 

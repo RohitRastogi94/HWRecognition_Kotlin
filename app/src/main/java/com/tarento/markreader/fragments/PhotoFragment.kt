@@ -157,8 +157,8 @@ class PhotoFragment internal constructor() : Fragment() {
                 response: Response<ProcessResult>
             ) {
                 Log.d(TAG, "onResponse: ${response.isSuccessful}")
+                ProgressBarUtil.dismissProgressDialog()
                 if (response != null && response.isSuccessful && response.body() != null) {
-                    ProgressBarUtil.dismissProgressDialog()
                     Log.d(TAG, "onResponse: ${response.body()}")
 
                     val processResult = response.body()
@@ -177,6 +177,9 @@ class PhotoFragment internal constructor() : Fragment() {
                         }
 
                     }
+                }else{
+                    Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
 

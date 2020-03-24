@@ -164,8 +164,8 @@ class SubjectDetailsFragment : Fragment() {
                 response: Response<FetchExamsResponse>
             ) {
                 Log.d(TAG, "onResponse: ${response.isSuccessful}")
+                ProgressBarUtil.dismissProgressDialog()
                 if (response != null && response.isSuccessful && response.body() != null) {
-                    ProgressBarUtil.dismissProgressDialog()
                     Log.d(TAG, "onResponse: ${response.body()}")
 
                     fetchExamsResponse = response.body()
@@ -190,6 +190,9 @@ class SubjectDetailsFragment : Fragment() {
                         }
 
                     }
+                }else{
+                    Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
 
@@ -268,8 +271,8 @@ class SubjectDetailsFragment : Fragment() {
                 response: Response<CheckOCRResponse>
             ) {
                 Log.d(SubjectDetailsFragment.TAG, "onResponse: ${response.isSuccessful}")
+                ProgressBarUtil.dismissProgressDialog()
                 if (response != null && response.isSuccessful && response.body() != null) {
-                    ProgressBarUtil.dismissProgressDialog()
                     Log.d(SubjectDetailsFragment.TAG, "onResponse: ${response.body()}")
                     checkOCRResponse = response.body()
 
@@ -295,7 +298,11 @@ class SubjectDetailsFragment : Fragment() {
                         }
 
                     }
+                }else{
+                    Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
+                        .show()
                 }
+
             }
 
         })
