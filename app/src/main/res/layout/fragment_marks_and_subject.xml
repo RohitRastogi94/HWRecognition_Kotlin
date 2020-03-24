@@ -202,18 +202,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonCancelMark"
-                    style="?attr/materialButtonOutlinedStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp"
-                    android:text="@string/cancel"
-                    android:textColor="@color/black"
-                    android:visibility="gone"
-                    app:strokeColor="@color/colorGray_20" />
-
                 <LinearLayout
                     android:id="@+id/linearEditSummaryHolder"
                     android:layout_width="match_parent"
@@ -222,15 +210,16 @@
                     android:visibility="visible">
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonEditMark"
+                        android:id="@+id/buttonCancelMark"
+                        style="?attr/materialButtonOutlinedStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="0.75"
-                        android:backgroundTint="@color/colorGray"
-                        android:text="@string/edit"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:text="@string/cancel"
                         android:textColor="@color/black"
-                        app:icon="@drawable/ic_edit"
-                        app:iconTint="@color/black" />
+                        app:strokeColor="@color/colorGray_20" />
 
                     <View
                         android:layout_width="40dp"

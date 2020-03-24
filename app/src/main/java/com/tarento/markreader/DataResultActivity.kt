@@ -9,7 +9,8 @@ import com.tarento.markreader.fragments.MarksAndSubjectFragment
 import com.tarento.markreader.fragments.SubjectDetailsFragment
 import kotlinx.android.synthetic.main.activity_data_result.*
 
-class DataResultActivity : AppCompatActivity() , SubjectDetailsFragment.SubjectSummaryListener {
+class DataResultActivity : AppCompatActivity() , SubjectDetailsFragment.SubjectSummaryListener,
+    MarksAndSubjectFragment.MarksAndSubjectListener {
 
     var result:ProcessResult? = null
     var checkOCRResponse: CheckOCRResponse? = null
@@ -96,6 +97,10 @@ class DataResultActivity : AppCompatActivity() , SubjectDetailsFragment.SubjectS
 
     override fun moveToMarksReceived() {
         verifyMarksReceivedStep2()
+    }
+
+    override fun backToSubjectStep1() {
+        verifySubjectStep1()
     }
 }
 

@@ -16,6 +16,7 @@ import com.tarento.markreader.data.model.ResultTableModel
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.item_testid.view.*
 import kotlinx.android.synthetic.main.marks_row_item.view.*
+import java.lang.Exception
 
 class MarksListAdapter : RecyclerView.Adapter<MarksListAdapter.ViewHolder>() {
     val userList: MutableList<ResultTableModel> = mutableListOf()
@@ -83,11 +84,14 @@ class MarksListAdapter : RecyclerView.Adapter<MarksListAdapter.ViewHolder>() {
                     containerView.txtSubjectName.setLines(1)
                     containerView.textMaxMark.setLines(1)
                     containerView.textMarkSecured.setLines(1)
-
-                    if (columnValue[4].value?.contentEquals("Pass")!!) {
-                        containerView.imgResult.setImageResource(R.drawable.ic_pass)
-                    } else {
-                        containerView.imgResult.setImageResource(R.drawable.ic_failed)
+                    try {
+                        if (columnValue[4].value?.contentEquals("Pass")!!) {
+                            containerView.imgResult.setImageResource(R.drawable.ic_pass)
+                        } else {
+                            containerView.imgResult.setImageResource(R.drawable.ic_failed)
+                        }
+                    } catch (ex: Exception) {
+                        ex.printStackTrace()
                     }
                     containerView.imgResult.visibility = View.VISIBLE
                     containerView.textMarkResult.visibility = View.GONE

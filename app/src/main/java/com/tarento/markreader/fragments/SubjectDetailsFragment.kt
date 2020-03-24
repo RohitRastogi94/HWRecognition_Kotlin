@@ -130,51 +130,15 @@ class SubjectDetailsFragment : Fragment() {
             mDatePicker?.setTitle("Select Exam date");
             mDatePicker?.show();
         }
-        disableEditMode()
-        buttonEditSubject.setOnClickListener {
-            editExamDate.isClickable = true
-            editStudentId.isEnabled = true
-            editExamDate.isEnabled = true
-            editStudentId.setSelection(editStudentId.text.length)
-            linearEditNextHolder.visibility = View.GONE
-            linearEditSubjectHolder.visibility = View.VISIBLE
-        }
-        buttonCancel.setOnClickListener {
-            disableEditMode()
-            linearEditSubjectHolder.visibility = View.GONE
-            linearEditNextHolder.visibility = View.VISIBLE
-            studentCode = data?.data?.get(2)?.text
-            editStudentId.setText(studentCode)
-            if(examDate?.contentEquals(data?.data?.get(3)?.text.toString())!!){
-                examDate = data?.data?.get(3)?.text
-            }else{
-                examDate = data?.data?.get(3)?.text
-                fetchExamList(examDate)
-            }
-            editExamDate.setText(examDate)
-        }
-
-        buttonSaveSubject.setOnClickListener {
-            disableEditMode()
-            linearEditSubjectHolder.visibility = View.GONE
-            linearEditNextHolder.visibility = View.VISIBLE
-
-            data?.data?.get(3)?.text = editExamDate.text.toString()
-            data?.data?.get(2)?.text = editStudentId.text.toString()
-        }
-
 
         buttonMoveNext.setOnClickListener {
             checkOCR(editTestId.text.toString(), editStudentId.text.toString(), true)
         }
 
+        buttonCancel.setOnClickListener {
+            activity?.finish()
+        }
 
-    }
-
-    private fun disableEditMode() {
-        editExamDate.isClickable = false
-        editExamDate.isEnabled = false
-        editStudentId.isEnabled = false
     }
 
     private fun fetchExamList(examDate: String?) {
@@ -183,7 +147,6 @@ class SubjectDetailsFragment : Fragment() {
         activity?.applicationContext?.let {
             schoolCode = AppPreferenceHelper(it).getSchoolCode()
         }
-        //Log.d(TAG, "getGetProcessData() called with: data = [$requestBody]")
         val hero = apiInterface.fetchExams(schoolCode!!, examDate!!)
 
         hero.enqueue(object : Callback<FetchExamsResponse> {
