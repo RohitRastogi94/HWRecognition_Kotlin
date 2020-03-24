@@ -74,32 +74,36 @@ class MarksAndSubjectFragment : Fragment() {
         buttonSummary.setOnClickListener {
             var isValidMarks = true
             if (!updatedTableModel.isNullOrEmpty()) {
-                totalMarks = 0F
-                totalMarksSecured = 0F
-                val markResponse = checkOCRResponse!!.data.ocr_data.response[this.responseIndex]
-                for (i in 0 until markResponse.header.row) {
-                    for (j in 0 until 5) {
-                        if (i > 0 && j == 3) {
-                            val processDataMax = getProcessData(markResponse.data, i, j - 1)
-                            val processData = getProcessData(markResponse.data, i, j)
-                            if (processData?.row == updatedTableModel[i].rowId) {
-                                updatedTableModel[i].columnValue.forEachIndexed { index, columnValues ->
-                                    if (columnValues.columnId == 3 && columnValues.columnId == processData.col) {
-                                        processData.title = columnValues.value.toString()
+                try {
+                    totalMarks = 0F
+                    totalMarksSecured = 0F
+                    val markResponse = checkOCRResponse!!.data.ocr_data.response[this.responseIndex]
+                    for (i in 0 until markResponse.header.row) {
+                        for (j in 0 until 5) {
+                            if (i > 0 && j == 3) {
+                                val processDataMax = getProcessData(markResponse.data, i, j - 1)
+                                val processData = getProcessData(markResponse.data, i, j)
+                                if (updatedTableModel.size > i && processData?.row == updatedTableModel[i].rowId) {
+                                    updatedTableModel[i].columnValue.forEachIndexed { index, columnValues ->
+                                        if (columnValues.columnId == 3 && columnValues.columnId == processData.col) {
+                                            processData.title = columnValues.value.toString()
 
-                                        if (processData.title.isNotEmpty() && !processData.title.contentEquals(
-                                                "."
-                                            )
-                                        ) {
-                                            val pointReceived =
-                                                if (processData.title.contentEquals("る.0")) 3F else processData.title.toFloat()
-                                            val maxMarks = processDataMax?.title
-                                            if (maxMarks != null) {
-                                                totalMarks += maxMarks.toFloat()
-                                                totalMarksSecured += pointReceived
-                                                if (pointReceived in 0.0..maxMarks.toDouble()) {
-                                                    if (isValidMarks) {
-                                                        isValidMarks = true
+                                            if (processData.title.isNotEmpty() && !processData.title.contentEquals(
+                                                    "."
+                                                )
+                                            ) {
+                                                val pointReceived =
+                                                    if (processData.title.contentEquals("る.0")) 3F else processData.title.toFloat()
+                                                val maxMarks = processDataMax?.title
+                                                if (maxMarks != null) {
+                                                    totalMarks += maxMarks.toFloat()
+                                                    totalMarksSecured += pointReceived
+                                                    if (pointReceived in 0.0..maxMarks.toDouble()) {
+                                                        if (isValidMarks) {
+                                                            isValidMarks = true
+                                                        }
+                                                    } else {
+                                                        isValidMarks = false
                                                     }
                                                 } else {
                                                     isValidMarks = false
@@ -107,19 +111,19 @@ class MarksAndSubjectFragment : Fragment() {
                                             } else {
                                                 isValidMarks = false
                                             }
-                                        } else {
-                                            isValidMarks = false
+                                            Log.i(
+                                                "TAG",
+                                                "Result:Max${processDataMax?.title}:${processData.title}"
+                                            )
                                         }
-                                        Log.i(
-                                            "TAG",
-                                            "Result:Max${processDataMax?.title}:${processData.title}"
-                                        )
                                     }
                                 }
                             }
-                        }
 
+                        }
                     }
+                }catch (ex:Exception){
+                    ex.printStackTrace()
                 }
             }
             if(isValidMarks) {
@@ -229,11 +233,17 @@ class MarksAndSubjectFragment : Fragment() {
                         columnVal.value = text
                     }
                 }
-                columnValuesList.add(columnVal)
+                if(j == 0 && columnVal.value.isNullOrEmpty()){
+
+                }else {
+                    columnValuesList.add(columnVal)
+                }
             }
-            var resultTableModel = ResultTableModel(i)
-            resultTableModel.columnValue = columnValuesList
-            taleDetail.add(resultTableModel)
+            if (columnValuesList.size == 5) {
+                var resultTableModel = ResultTableModel(i)
+                resultTableModel.columnValue = columnValuesList
+                taleDetail.add(resultTableModel)
+            }
         }
         Log.d("TAG", "Result:" + taleDetail.toString())
 
