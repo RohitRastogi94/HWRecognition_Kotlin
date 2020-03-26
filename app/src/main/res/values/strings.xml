@@ -66,4 +66,7 @@
     <string name="provide_your_details_to_start_scanning">Provide your details to \n start scanning the mark sheets</string>
     <string name="proceed">Proceed</string>
     <string name="underscore">-</string>
+    <string name="my_scans">My Scans</string>
+    <string name="logout">Logout</string>
+    <string name="scan_the_mark_sheet">Scan The Mark Sheet</string>
 </resources>

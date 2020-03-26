@@ -108,7 +108,7 @@ class SummaryActivity : AppCompatActivity() {
                                 ) { dialog, which ->
                                     val intent = Intent(
                                         this@SummaryActivity,
-                                        JavaPreviewActivity::class.java
+                                        IndexActivity::class.java
                                     )
                                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorGray"
+    tools:context=".MainActivity">
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <FrameLayout
+            android:id="@+id/frameContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="50dp"
+            app:layout_anchorGravity="top" />
+
+        <com.google.android.material.bottomappbar.BottomAppBar
+            android:id="@+id/bottom_app_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
+            app:backgroundTint="@color/white"
+            app:fabAlignmentMode="center">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <RelativeLayout
+                    android:id="@+id/relativeLeftHolder"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.2"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toLeftOf="@+id/relativeRightHolder"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:id="@+id/leftbutton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginTop="10dp"
+                        android:drawableTop="@drawable/ic_menu"
+                        android:drawablePadding="@dimen/spacing_medium"
+                        android:text="@string/my_scans"
+                        android:textSize="@dimen/text_small" />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/relativeCenterHolder"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.6"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toLeftOf="@+id/relativeRightHolder"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:text="@string/scan_the_mark_sheet"
+                        android:textSize="@dimen/text_small" />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/relativeRightHolder"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="20dp"
+                    android:layout_weight="0.2"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toRightOf="@+id/relativeLeftHolder"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:id="@+id/rightbutton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginTop="10dp"
+                        android:drawableTop="@drawable/ic_menu"
+                        android:drawablePadding="@dimen/spacing_medium"
+                        android:text="@string/logout"
+                        android:textSize="@dimen/text_small" />
+
+                </RelativeLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.bottomappbar.BottomAppBar>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabOpenCamera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_scan"
+            android:tint="@android:color/white"
+            app:backgroundTint="@color/dark_green"
+            app:fabCustomSize="80dp"
+            app:layout_anchor="@id/bottom_app_bar" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

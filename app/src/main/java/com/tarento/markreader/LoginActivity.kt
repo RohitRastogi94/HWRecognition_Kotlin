@@ -125,12 +125,14 @@ class LoginActivity : AppCompatActivity() {
                             appPreferenceHelper.removePreference()
                             appPreferenceHelper.setSchoolCode(loginResponse.data.school.school_code)
                             appPreferenceHelper.setTeacherCode(loginResponse.data.teacher.teacher_code)
-                            startActivity(
-                                Intent(
-                                    this@LoginActivity,
-                                    JavaPreviewActivity::class.java
-                                )
+
+                            val intent = Intent(
+                                this@LoginActivity,
+                                IndexActivity::class.java
                             )
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            startActivity(intent)
                             finish()
                         } else {
                             Toast.makeText(
