@@ -37,6 +37,7 @@
     <dimen name="rect_button_height">24dp</dimen>
     <dimen name="shutter_button_margin">@dimen/margin_xsmall</dimen>
 
+    <dimen name="text_xlarge">20sp</dimen>
     <dimen name="text_large">18sp</dimen>
     <dimen name="text_medium">16sp</dimen>
     <dimen name="text_small">13sp</dimen>

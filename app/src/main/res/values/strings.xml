@@ -60,4 +60,10 @@
     <string name="scanned_data_summary">Scanned data summary</string>
     <string name="total_marks">Total Marks</string>
     <string name="total_marks_secured">Total marks secured</string>
+    <string name="welcome_to">Welcome to</string>
+    <string name="answer_paper_scanner">Answer Paper Scanner</string>
+    <string name="gujarat">Gujarat</string>
+    <string name="provide_your_details_to_start_scanning">Provide your details to \n start scanning the mark sheets</string>
+    <string name="proceed">Proceed</string>
+    <string name="underscore">-</string>
 </resources>

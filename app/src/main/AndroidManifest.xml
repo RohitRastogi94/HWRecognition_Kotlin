@@ -27,7 +27,7 @@
         tools:ignore="LockedOrientationActivity">
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".LauncherActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme">
             <!-- Main app intent filter -->
@@ -36,6 +36,11 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".LoginActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme">
         </activity>
         <activity android:name=".SummaryActivity"
             android:screenOrientation="portrait"
