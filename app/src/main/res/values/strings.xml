@@ -69,4 +69,7 @@
     <string name="my_scans">My Scans</string>
     <string name="logout">Logout</string>
     <string name="scan_the_mark_sheet">Scan The Mark Sheet</string>
+    <string name="uploading_image">Uploading image…</string>
+    <string name="please_wait_while_we_scan_the_picture">Please wait, while we scan the picture</string>
+    <string name="scanning_complete">Scanning Complete!</string>
 </resources>

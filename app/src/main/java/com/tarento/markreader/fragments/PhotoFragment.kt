@@ -21,6 +21,7 @@ import com.tarento.markreader.data.model.ProcessResult
 import com.tarento.markreader.data.preference.AppPreferenceHelper
 import com.tarento.markreader.scanner.ScannerConstants
 import com.tarento.markreader.utils.ProgressBarUtil
+import kotlinx.android.synthetic.main.custom_progress_dialog.*
 import kotlinx.android.synthetic.main.fragment_photo.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
@@ -86,7 +87,8 @@ class PhotoFragment internal constructor() : Fragment() {
 
     private fun getOCRImageUploadResponse(file: File?) {
         activity?.let {
-            ProgressBarUtil.showProgressDialog(it)
+            loadingView.visibility = View.VISIBLE
+            //ProgressBarUtil.showCustomProgressDialog(it, false)
         }
 
         val apiInterface: OCRService = ApiClient.getClient()!!.create(OCRService::class.java)
@@ -100,8 +102,8 @@ class PhotoFragment internal constructor() : Fragment() {
             override fun onFailure(call: retrofit2.Call<OCR>, t: Throwable) {
 
                 Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
-                //.show()
-
+                    //.show()
+                loadingView.visibility = View.GONE
                 ProgressBarUtil.dismissProgressDialog()
             }
 
@@ -117,13 +119,15 @@ class PhotoFragment internal constructor() : Fragment() {
 
                         Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
                         //.show()
-
+                        loadingView.visibility = View.GONE
                         ProgressBarUtil.dismissProgressDialog()
                         return
                     }
-
+                    textMessage.text =
+                        resources.getString(R.string.please_wait_while_we_scan_the_picture)
                     getGetProcessData(response.body()?.filepath!!)
                 } else {
+                    loadingView.visibility = View.GONE
                     ProgressBarUtil.dismissProgressDialog()
                 }
             }
@@ -148,7 +152,7 @@ class PhotoFragment internal constructor() : Fragment() {
 
                 Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
                 //.show()
-
+                loadingView.visibility = View.GONE
                 ProgressBarUtil.dismissProgressDialog()
             }
 
@@ -160,24 +164,26 @@ class PhotoFragment internal constructor() : Fragment() {
                 ProgressBarUtil.dismissProgressDialog()
                 if (response != null && response.isSuccessful && response.body() != null) {
                     Log.d(TAG, "onResponse: ${response.body()}")
-
+                    vocaProgressBar.visibility = View.GONE
+                    finalResult.visibility = View.VISIBLE
+                    textMessage.text = resources.getString(R.string.scanning_complete)
                     val processResult = response.body()
 
-                    processResult?.let {
-                        if (processResult.status.code == 200) {
-                            activity?.applicationContext?.let { it1 -> AppPreferenceHelper(it1).clearStudentDetails() }
-                            val intent = Intent(activity, DataResultActivity::class.java)
-                            intent.putExtra("result", processResult)
-                            startActivity(intent)
-                            activity?.finish()
-                        } else {
-                            Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
-                                .show()
+                    if (processResult != null && processResult.status.code == 200) {
+                        activity?.applicationContext?.let { it1 -> AppPreferenceHelper(it1).clearStudentDetails() }
+                        val intent = Intent(activity, DataResultActivity::class.java)
+                        intent.putExtra("result", processResult)
+                        startActivity(intent)
+                        activity?.finish()
+                    } else {
+                        loadingView.visibility = View.GONE
+                        Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
+                            .show()
 
                         }
 
-                    }
-                }else{
+                } else {
+                    loadingView.visibility = View.GONE
                     Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
                         .show()
                 }
