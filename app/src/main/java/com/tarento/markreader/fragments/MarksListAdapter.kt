@@ -60,6 +60,11 @@ class MarksListAdapter : RecyclerView.Adapter<MarksListAdapter.ViewHolder>() {
                 containerView.textMaxMark.setText(columnValue[2].value)
                 containerView.textMarkSecured.setText(columnValue[3].value)
                 if (this.rowId == 0) {
+                    containerView.firstElement.setBackgroundResource(R.drawable.cell_shape_gray)
+                    containerView.secondElement.setBackgroundResource(R.drawable.cell_shape_gray)
+                    containerView.thirdElement.setBackgroundResource(R.drawable.cell_shape_gray)
+                    containerView.fourthElement.setBackgroundResource(R.drawable.cell_shape_gray)
+                    containerView.cell_layout.setBackgroundResource(R.drawable.cell_shape_gray)
                     setDisabledEditTextProperties(containerView.textRollNo)
                     setDisabledEditTextProperties(containerView.txtSubjectName)
                     setDisabledEditTextProperties(containerView.textMaxMark)

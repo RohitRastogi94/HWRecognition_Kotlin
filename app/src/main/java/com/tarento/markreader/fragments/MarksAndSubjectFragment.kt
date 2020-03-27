@@ -137,7 +137,7 @@ class MarksAndSubjectFragment : Fragment() {
                 startActivity(intent)
             }else{
                 val summaryMessage =
-                    AlertDialog.Builder(activity).create()
+                    AlertDialog.Builder(activity, R.style.DialogTheme).create()
                 summaryMessage.setTitle("Message")
                 summaryMessage.setMessage("Please enter valid marks")
                 summaryMessage.setCancelable(false)

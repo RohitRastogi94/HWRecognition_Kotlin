@@ -158,11 +158,10 @@
                     android:id="@+id/recyclerMarks"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:isScrollContainer="true"
                     android:nestedScrollingEnabled="false"
                     android:paddingTop="10dp"
                     android:paddingBottom="10dp"
-                    android:scrollbars="none" />
+                     />
                 <!-- </HorizontalScrollView>-->
 
                 <!--  <ScrollView

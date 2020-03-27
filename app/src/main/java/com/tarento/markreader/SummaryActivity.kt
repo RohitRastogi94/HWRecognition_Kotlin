@@ -97,7 +97,7 @@ class SummaryActivity : AppCompatActivity() {
                         if (saveOCRResponse != null) {
                             if (saveOCRResponse!!.http.status == 200) {
                                 val summaryMessage =
-                                    AlertDialog.Builder(this@SummaryActivity).create()
+                                    AlertDialog.Builder(this@SummaryActivity, R.style.DialogTheme).create()
                                 summaryMessage.setTitle("Data Summary")
                                 summaryMessage.setMessage("Saved Successfully")
                                 summaryMessage.setCancelable(false)
