@@ -245,6 +245,7 @@
                 android:layout_weight="1"
                 android:backgroundTint="@color/orange"
                 android:text="@string/submit"
+                android:textAllCaps="true"
                 android:textColor="@color/white" />
         </LinearLayout>
 
