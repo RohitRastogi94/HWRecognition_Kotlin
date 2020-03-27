@@ -248,6 +248,7 @@ class SubjectDetailsFragment : Fragment() {
     }
 
     private fun checkOCR(examCode:String, studentCode:String, moveToMarks: Boolean ) {
+        textWrongStudentId.visibility = View.GONE
         val apiInterface: OCRService = ApiClient.getClient()!!.create(OCRService::class.java)
         data?.data?.get(3)?.text = examDate.toString()
         data?.data?.get(2)?.text = studentCode
@@ -286,6 +287,9 @@ class SubjectDetailsFragment : Fragment() {
                                     preferenceHelper?.setExamDate(editExamDate.text.toString())
                                     subjectSummaryListener?.moveToMarksReceived()
                                 }
+                            }else if(checkOCRResponse?.why!!.contentEquals("WRONG_STUDENT_ID")){
+                                textWrongStudentId.visibility = View.VISIBLE
+
                             }else{
                                 Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
                                     .show()

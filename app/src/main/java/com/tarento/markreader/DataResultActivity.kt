@@ -41,7 +41,7 @@ class DataResultActivity : AppCompatActivity() , SubjectDetailsFragment.SubjectS
     private fun verifyMarksReceivedStep2() {
         linearVerifySubject.setBackgroundResource(R.color.colorGray_40)
         linearVerifyMark.setBackgroundResource(R.color.white)
-        txtVerifySubject.setTextColor(resources.getColor(R.color.green))
+        txtVerifySubject.setTextColor(resources.getColor(R.color.dark_green))
         txtVerifyMark.setTextColor(resources.getColor(R.color.black))
         textStep1.setBackgroundResource(R.drawable.ic_tick)
         textStep1.text = ""

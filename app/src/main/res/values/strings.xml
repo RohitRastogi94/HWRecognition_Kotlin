@@ -57,6 +57,7 @@
     <string name="next">NEXT</string>
     <string name="colon">:</string>
     <string name="no_tests_for_given_date">No tests  for given date</string>
+    <string name="please_correct_the_student_id">Please correct the Student Id</string>
     <string name="scanned_data_summary">Scanned data summary</string>
     <string name="total_marks">Total Marks</string>
     <string name="total_marks_secured">Total marks secured</string>

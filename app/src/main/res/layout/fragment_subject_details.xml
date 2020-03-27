@@ -39,11 +39,27 @@
                     android:layout_marginTop="20dp"
                     android:orientation="vertical">
 
-                    <TextView
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/student_id"
-                        android:textColor="@color/black" />
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:text="@string/student_id"
+                            android:textColor="@color/black" />
+
+                        <TextView
+                            android:id="@+id/textWrongStudentId"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:text="@string/please_correct_the_student_id"
+                            android:textColor="@color/red"
+                            android:visibility="gone" />
+                    </RelativeLayout>
 
                     <EditText
                         android:id="@+id/editStudentId"
