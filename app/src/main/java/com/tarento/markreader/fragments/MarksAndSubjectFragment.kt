@@ -93,11 +93,14 @@ class MarksAndSubjectFragment : Fragment() {
                                                 )
                                             ) {
                                                 val pointReceived =
-                                                    if (processData.title.contentEquals("る.0")) 3F else processData.title.toFloat()
+                                                    if (processData.title.isNullOrEmpty()) -1F else if (processData.title.contentEquals("る.0")) 3F else processData.title.toFloat()
                                                 val maxMarks = processDataMax?.title
                                                 if (maxMarks != null) {
                                                     totalMarks += maxMarks.toFloat()
-                                                    totalMarksSecured += pointReceived
+                                                    if (pointReceived >= 0) {
+                                                        processData.title = String.format("%.1f", pointReceived)
+                                                        totalMarksSecured += pointReceived
+                                                    }
                                                     if (pointReceived in 0.0..maxMarks.toDouble()) {
                                                         if (isValidMarks) {
                                                             isValidMarks = true
@@ -206,12 +209,14 @@ class MarksAndSubjectFragment : Fragment() {
             for (j in 0 until columns) {
                 var columnVal = ColumnValues()
                 if (j > 3 && i > 0) {
-                    val maxMarks = getData(markResponseItem.data, i, j - 2)
+                    var maxMarks = getData(markResponseItem.data, i, j - 2)
                     val obtainedMarks = getData(markResponseItem.data, i, j - 1)
-                    if (maxMarks.isNotEmpty() && obtainedMarks.isNotEmpty()) {
+                    maxMarks = if(maxMarks.isEmpty()) "0" else maxMarks
+                    //if (maxMarks.isNotEmpty() && obtainedMarks.isNotEmpty()) {
                         val pointReceived =
-                            if (obtainedMarks.contentEquals("る.0")) 3F else obtainedMarks.toFloat()
+                            if(obtainedMarks.isEmpty()) -1F else if (obtainedMarks.contentEquals("る.0")) 3F else obtainedMarks.toFloat()
                         totalMarks += maxMarks.toFloat()
+                        if(pointReceived >= 0)
                         totalMarksSecured += pointReceived
                         columnVal.columnId = j
                         columnVal.maxMark = maxMarks.toFloat()
@@ -220,7 +225,7 @@ class MarksAndSubjectFragment : Fragment() {
                         } else {
                             columnVal.value = "Fail"
                         }
-                    }
+                    //}
 
                 } else {
 

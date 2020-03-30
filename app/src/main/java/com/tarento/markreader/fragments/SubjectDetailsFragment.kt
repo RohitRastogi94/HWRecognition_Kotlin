@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -100,10 +101,12 @@ class SubjectDetailsFragment : Fragment() {
         }
 
         editTestId.setOnClickListener {
+            hideSoftKeyboard(editTestId)
             showPopupDialog(editTestId)
         }
 
         editExamDate.setOnClickListener {
+            hideSoftKeyboard(editExamDate)
             //To show current date in the datepicker
             val mcurrentDate = Calendar.getInstance();
             val mYear = mcurrentDate.get(Calendar.YEAR);
@@ -139,6 +142,11 @@ class SubjectDetailsFragment : Fragment() {
             activity?.finish()
         }
 
+    }
+
+    private fun hideSoftKeyboard(view: View?) {
+        val inputMethodManager : InputMethodManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view?.windowToken,0)
     }
 
     private fun fetchExamList(examDate: String?) {

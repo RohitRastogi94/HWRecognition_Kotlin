@@ -111,7 +111,7 @@ class MarksListAdapter : RecyclerView.Adapter<MarksListAdapter.ViewHolder>() {
                     )
                 ) {
                     val pointReceived =
-                        if (resultModel.columnValue[3].value!!.contentEquals("る.0")) 3F else resultModel.columnValue[3].value!!.toFloat()
+                        if (resultModel.columnValue[3].value!!.isNullOrEmpty()) -1F else if (resultModel.columnValue[3].value!!.contentEquals("る.0")) 3F else resultModel.columnValue[3].value!!.toFloat()
                     val maxMarks = resultModel.columnValue[4].maxMark
                     if (pointReceived in 0.0..maxMarks.toDouble()) {
                         containerView.imgResult.setImageResource(R.drawable.ic_pass)
@@ -143,7 +143,7 @@ class MarksListAdapter : RecyclerView.Adapter<MarksListAdapter.ViewHolder>() {
             itemView.setOnClickListener {
 
             }
-
+            listener(ResultTableModel(position), userList)
         }
     }
 
