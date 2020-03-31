@@ -9,7 +9,7 @@ import kotlinx.android.synthetic.main.activity_index.*
 class IndexActivity : AppCompatActivity() {
 
     companion object {
-        val TAG = IndexActivity.javaClass.canonicalName
+        val TAG = IndexActivity::class.java.simpleName
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

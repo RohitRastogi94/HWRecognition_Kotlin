@@ -3,6 +3,7 @@ package com.tarento.markreader
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.core.content.ContextCompat
 import com.tarento.markreader.data.model.CheckOCRResponse
 import com.tarento.markreader.data.model.ProcessResult
 import com.tarento.markreader.fragments.MarksAndSubjectFragment
@@ -41,8 +42,8 @@ class DataResultActivity : AppCompatActivity() , SubjectDetailsFragment.SubjectS
     private fun verifyMarksReceivedStep2() {
         linearVerifySubject.setBackgroundResource(R.color.colorGray_40)
         linearVerifyMark.setBackgroundResource(R.color.white)
-        txtVerifySubject.setTextColor(resources.getColor(R.color.dark_green))
-        txtVerifyMark.setTextColor(resources.getColor(R.color.black))
+        txtVerifySubject.setTextColor(ContextCompat.getColor(this, R.color.dark_green))
+        txtVerifyMark.setTextColor(ContextCompat.getColor(this, R.color.black))
         textStep1.setBackgroundResource(R.drawable.ic_tick)
         textStep1.text = ""
         textStep2.setBackgroundResource(R.drawable.round_small_shape)
@@ -63,8 +64,8 @@ class DataResultActivity : AppCompatActivity() , SubjectDetailsFragment.SubjectS
     private fun verifySubjectStep1() {
         linearVerifySubject.setBackgroundResource(R.color.white)
         linearVerifyMark.setBackgroundResource(R.color.colorGray_40)
-        txtVerifySubject.setTextColor(resources.getColor(R.color.black))
-        txtVerifyMark.setTextColor(resources.getColor(R.color.text_hint))
+        txtVerifySubject.setTextColor(ContextCompat.getColor(this, R.color.black))
+        txtVerifyMark.setTextColor(ContextCompat.getColor(this, R.color.text_hint))
         textStep1.setBackgroundResource(R.drawable.round_small_shape)
         textStep1.text = "1"
         textStep2.setBackgroundResource(R.drawable.round_small_disabled_shape)
