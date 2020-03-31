@@ -1,18 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-  ~ Copyright 2019 Google LLC
-  ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~     https://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Mark Scanner</string>
     <string name="capture_button_alt">Capture</string>
@@ -73,4 +59,6 @@
     <string name="uploading_image">Uploading image…</string>
     <string name="please_wait_while_we_scan_the_picture">Please wait, while we scan the picture</string>
     <string name="scanning_complete">Scanning Complete!</string>
+    <string name="invalid_credentials">Invalid credentials</string>
+    <string name="something_went_wrong">Something went wrong</string>
 </resources>

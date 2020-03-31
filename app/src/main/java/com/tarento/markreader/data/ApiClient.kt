@@ -42,5 +42,10 @@ class ApiClient {
             }
             return retrofit
         }
+
+        fun createAPIService(): OCRService? {
+            val retrofitInstance = getClient()
+            return retrofitInstance?.create(OCRService::class.java)
+        }
     }
 }

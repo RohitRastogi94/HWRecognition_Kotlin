@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.EditText
 import android.widget.Toast
 import com.tarento.markreader.data.ApiClient
 import com.tarento.markreader.data.OCRService
@@ -23,33 +22,24 @@ import retrofit2.Response
 class LoginActivity : AppCompatActivity() {
 
     companion object {
-        val TAG = LoginActivity.javaClass.canonicalName
+        val TAG = LoginActivity::class.java.simpleName
     }
 
-    lateinit var usernameEditText: EditText
-    lateinit var passwordEditText: EditText
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-
-        usernameEditText = findViewById<EditText>(R.id.username)
-        passwordEditText = findViewById<EditText>(R.id.password)
-
         password.apply {
             setOnEditorActionListener { _, actionId, _ ->
                 when (actionId) {
                     EditorInfo.IME_ACTION_DONE ->
-                        loginDataChanged(
-                            usernameEditText.text.toString(),
-                            passwordEditText.text.toString()
-                        )
+                        loginDataChanged(username.text.toString(), password.text.toString())
                 }
                 false
             }
         }
 
         buttonLogin.setOnClickListener {
-            loginDataChanged(usernameEditText.text.toString(), passwordEditText.text.toString())
+            loginDataChanged(username.text.toString(), password.text.toString())
         }
 
         cancelId.setOnClickListener {
@@ -57,20 +47,16 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun loginDataChanged(username: String, password: String) {
-        if (!isUserNameValid(username)) {
-            usernameEditText.error = getString(R.string.invalid_username)
-        } else if (!isPasswordValid(password)) {
-            passwordEditText.error = getString(R.string.invalid_password)
+    private fun loginDataChanged(usernameValue: String, passwordValue: String) {
+        if (!isUserNameValid(usernameValue)) {
+            username.error = getString(R.string.invalid_username)
+        } else if (!isPasswordValid(passwordValue)) {
+            password.error = getString(R.string.invalid_password)
         } else {
             loading.visibility = View.VISIBLE
-            loginRequest(username, password)
+            loginRequest(usernameValue, passwordValue)
 
         }
-    }
-
-    override fun onStop() {
-        super.onStop()
     }
 
     private fun isUserNameValid(username: String): Boolean {
@@ -88,71 +74,55 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun loginRequest(username: String, password: String) {
-        val apiInterface: OCRService = ApiClient.getClient()!!.create(OCRService::class.java)
-
-        val loginRequest = LoginRequest(
-            username,
-            password
-        )
+        val apiInterface: OCRService? = ApiClient.createAPIService()
+        val loginRequest = LoginRequest(username, password)
         Log.d(TAG, "request login() called with: data = [$loginRequest]")
-        val hero = apiInterface.login(loginRequest)
+        val loginAPICall = apiInterface?.login(loginRequest)
 
-        hero.enqueue(object : Callback<LoginResponse> {
+        loginAPICall?.enqueue(object : Callback<LoginResponse> {
             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
                 Log.e(TAG, "onResponse: Failuer", t)
-                Toast.makeText(this@LoginActivity, "Some thing went wrong", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(
+                    this@LoginActivity, getString(R.string.something_went_wrong),
+                    Toast.LENGTH_SHORT
+                ).show()
                 ProgressBarUtil.dismissProgressDialog()
                 loading.visibility = View.GONE
             }
 
-            override fun onResponse(
-                call: Call<LoginResponse>,
-                response: Response<LoginResponse>
-            ) {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                 Log.d(TAG, "onResponse: ${response.isSuccessful}")
                 ProgressBarUtil.dismissProgressDialog()
                 loading.visibility = View.GONE
-                if (response != null && response.isSuccessful && response.body() != null) {
-
+                if (response.isSuccessful && response.body() != null) {
                     Log.d(TAG, "onResponse: ${response.body()}")
-
                     val loginResponse = response.body()
-
                     loginResponse?.let {
                         if (loginResponse.http.status == 200) {
-                            var appPreferenceHelper = AppPreferenceHelper(applicationContext)
+                            val appPreferenceHelper = AppPreferenceHelper(applicationContext)
                             appPreferenceHelper.removePreference()
                             appPreferenceHelper.setSchoolCode(loginResponse.data.school.school_code)
                             appPreferenceHelper.setTeacherCode(loginResponse.data.teacher.teacher_code)
 
-                            val intent = Intent(
-                                this@LoginActivity,
-                                IndexActivity::class.java
-                            )
+                            val intent = Intent(this@LoginActivity, IndexActivity::class.java)
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             startActivity(intent)
                             finish()
                         } else {
                             Toast.makeText(
-                                this@LoginActivity,
-                                "Some thing went wrong",
+                                this@LoginActivity, getString(R.string.something_went_wrong),
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
-
                     }
-                }else{
+                } else {
                     Toast.makeText(
-                        this@LoginActivity,
-                        "Invalid credentials",
+                        this@LoginActivity, getString(R.string.invalid_credentials),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             }
-
         })
-
     }
 }
