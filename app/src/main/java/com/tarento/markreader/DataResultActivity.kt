@@ -20,8 +20,7 @@ class DataResultActivity : AppCompatActivity() , SubjectDetailsFragment.SubjectS
         setContentView(R.layout.activity_data_result)
 
         result = intent.getSerializableExtra("result") as ProcessResult
-
-        if (result != null && (result!!.response == null || result!!.response.size == 0)) {
+        if (result != null && (result!!.response.size == 0)) {
             finish()
             return
         }

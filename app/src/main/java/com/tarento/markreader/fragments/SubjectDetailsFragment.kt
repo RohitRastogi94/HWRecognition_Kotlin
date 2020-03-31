@@ -32,43 +32,42 @@ import java.util.*
 class SubjectDetailsFragment : Fragment() {
 
     companion object {
-        val TAG = SubjectDetailsFragment.javaClass.canonicalName
+        val TAG = SubjectDetailsFragment::class.java.simpleName
     }
-
-    var processResult:ProcessResult? = null
+    private var processResult: ProcessResult? = null
     var data: ProcessResponse? = null
     var fetchExamsResponse: FetchExamsResponse? = null
-    var checkOCRResponse:CheckOCRResponse?= null
+    var checkOCRResponse: CheckOCRResponse? = null
     private var schoolCode: String? = null
     private var examDate: String? = null
-    private var studentCode:String? = null
-    private var examId:String? = null
-    var subjectSummaryListener:SubjectSummaryListener? = null
+    private var studentCode: String? = null
+    private var examId: String? = null
+    var subjectSummaryListener: SubjectSummaryListener? = null
     var preferenceHelper: PreferenceHelper? = null
-    var dataIndex:Int = 0
+    private var dataIndex: Int = 0
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if(context is SubjectSummaryListener){
+        if (context is SubjectSummaryListener) {
             subjectSummaryListener = context
-        }else{
-            Log.d(TAG,"Implement Subject summary listener")
+        } else {
+            Log.d(TAG, "Implement Subject summary listener")
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         arguments?.let {
-            processResult = it.getSerializable("data") as ProcessResult
-            dataIndex = getStudentSummary(processResult!!.response)!!
-            data = processResult!!.response[dataIndex]
+            val intentData = it.getSerializable("data")
+            processResult = intentData as ProcessResult
+            processResult?.let { result ->
+                dataIndex = getStudentSummary(result.response)!!
+                data = result.response[dataIndex]
+            }
         }
-
-
     }
 
-    fun getStudentSummary(response: List<ProcessResponse>?): Int? =
+    private fun getStudentSummary(response: List<ProcessResponse>?): Int? =
         response?.indexOfFirst {
             println("header ${it.header.title}")
             it.header.title.equals("Student summary", true)
@@ -84,19 +83,17 @@ class SubjectDetailsFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-         preferenceHelper = activity?.applicationContext?.let { it ->
-            AppPreferenceHelper(
-                it
-            )
+        preferenceHelper = activity?.applicationContext?.let { it ->
+            AppPreferenceHelper(it)
         }
-        examDate =  preferenceHelper?.getExamDate()?: data?.data?.get(3)?.text
-        studentCode = preferenceHelper?.getStudentCode()?:data?.data?.get(2)?.text
+        examDate = preferenceHelper?.getExamDate() ?: data?.data?.get(3)?.text
+        studentCode = preferenceHelper?.getStudentCode() ?: data?.data?.get(2)?.text
         editStudentId.setText(studentCode)
         editExamDate.setText(examDate)
-        if(preferenceHelper?.getExamCodeList() != null){
+        if (preferenceHelper?.getExamCodeList() != null) {
             fetchExamsResponse = preferenceHelper?.getExamCodeList()
             updateExamCodeList()
-        }else {
+        } else {
             fetchExamList(examDate)
         }
 
@@ -107,15 +104,16 @@ class SubjectDetailsFragment : Fragment() {
 
         editExamDate.setOnClickListener {
             hideSoftKeyboard(editExamDate)
-            //To show current date in the datepicker
-            val mcurrentDate = Calendar.getInstance();
-            val mYear = mcurrentDate.get(Calendar.YEAR);
-            val mMonth = mcurrentDate.get(Calendar.MONTH);
-            val mDay = mcurrentDate.get(Calendar.DAY_OF_MONTH);
+            //To show current date in the datePicker
+            val mCurrentDate = Calendar.getInstance()
+            val mYear = mCurrentDate.get(Calendar.YEAR)
+            val mMonth = mCurrentDate.get(Calendar.MONTH)
+            val mDay = mCurrentDate.get(Calendar.DAY_OF_MONTH)
 
             val mDatePicker = activity?.let { it1 ->
-                DatePickerDialog(it1,
-                    DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
+                DatePickerDialog(
+                    it1,
+                    DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
                         var monthText = (month + 1).toString()
                         var dayText = dayOfMonth.toString()
                         if (monthText.length == 1) {
@@ -130,8 +128,8 @@ class SubjectDetailsFragment : Fragment() {
                     }, mYear, mMonth, mDay
                 )
             }
-            mDatePicker?.setTitle("Select Exam date");
-            mDatePicker?.show();
+            mDatePicker?.setTitle(getString(R.string.select_exam_date))
+            mDatePicker?.show()
         }
 
         buttonMoveNext.setOnClickListener {
@@ -145,82 +143,73 @@ class SubjectDetailsFragment : Fragment() {
     }
 
     private fun hideSoftKeyboard(view: View?) {
-        val inputMethodManager : InputMethodManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.hideSoftInputFromWindow(view?.windowToken,0)
+        val inputMethodManager: InputMethodManager =
+            activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view?.windowToken, 0)
     }
 
     private fun fetchExamList(examDate: String?) {
-        val apiInterface: OCRService = ApiClient.getClient()!!.create(OCRService::class.java)
-
+        val apiInterface: OCRService? = ApiClient.createAPIService()
         activity?.applicationContext?.let {
             schoolCode = AppPreferenceHelper(it).getSchoolCode()
         }
-        val hero = apiInterface.fetchExams(schoolCode!!, examDate!!)
 
-        hero.enqueue(object : Callback<FetchExamsResponse> {
-            override fun onFailure(call: Call<FetchExamsResponse>, t: Throwable) {
-                Log.e(TAG, "onResponse: Failuer", t)
-
-                Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
-                //.show()
-
-                ProgressBarUtil.dismissProgressDialog()
-            }
-
-            override fun onResponse(
-                call: Call<FetchExamsResponse>,
-                response: Response<FetchExamsResponse>
-            ) {
-                Log.d(TAG, "onResponse: ${response.isSuccessful}")
-                ProgressBarUtil.dismissProgressDialog()
-                if (response != null && response.isSuccessful && response.body() != null) {
-                    Log.d(TAG, "onResponse: ${response.body()}")
-
-                    fetchExamsResponse = response.body()
-
-                    fetchExamsResponse?.let {
-                        if (fetchExamsResponse!!.http.status == 200) {
-                            if (fetchExamsResponse!!.data.isNotEmpty()) {
-                                preferenceHelper?.setExamCodeList(fetchExamsResponse!!)
-                                updateExamCodeList()
-
-                            }else{
-                                textNoTestId?.visibility = View.VISIBLE
-                                examId = ""
-                                editTestId?.setText("")
-                                Toast.makeText(activity, "No tests for given date", Toast.LENGTH_SHORT)
-                                    .show()
-                            }
-                        } else {
-                            Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
-                                .show()
-
-                        }
-
-                    }
-                }else{
-                    Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
-                        .show()
+        if (schoolCode == null || examDate == null) return
+        apiInterface?.fetchExams(schoolCode!!, examDate)
+            ?.enqueue(object : Callback<FetchExamsResponse> {
+                override fun onFailure(call: Call<FetchExamsResponse>, t: Throwable) {
+                    Log.e(TAG, "onResponse: Failuer", t)
+                    ProgressBarUtil.dismissProgressDialog()
                 }
-            }
 
-        })
-
+                override fun onResponse(
+                    call: Call<FetchExamsResponse>,
+                    response: Response<FetchExamsResponse>
+                ) {
+                    Log.d(TAG, "onResponse: ${response.isSuccessful}")
+                    ProgressBarUtil.dismissProgressDialog()
+                    if (response.isSuccessful && response.body() != null) {
+                        Log.d(TAG, "onResponse: ${response.body()}")
+                        fetchExamsResponse = response.body()
+                        fetchExamsResponse?.let {
+                            if (it.http.status == 200) {
+                                if (it.data.isNotEmpty()) {
+                                    preferenceHelper?.setExamCodeList(it)
+                                    updateExamCodeList()
+                                } else {
+                                    textNoTestId?.visibility = View.VISIBLE
+                                    examId = ""
+                                    editTestId?.setText("")
+                                    Toast.makeText(
+                                        activity, getString(R.string.no_tests_for_given_date),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            } else {
+                                Toast.makeText(
+                                    activity, getString(R.string.something_went_wrong),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    } else {
+                        Toast.makeText(
+                            activity, getString(R.string.something_went_wrong),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            })
     }
 
-    fun updateExamCodeList(){
+    fun updateExamCodeList() {
         textNoTestId?.visibility = View.GONE
-        examId = preferenceHelper?.getExamCode()?:fetchExamsResponse!!.data[0].exam_code
+        examId = preferenceHelper?.getExamCode() ?: fetchExamsResponse!!.data[0].exam_code
         editTestId?.setText(examId)
-        if(editStudentId?.text?.isNotBlank()!!) {
-            checkOCR(
-                editTestId.text.toString(),
-                editStudentId.text.toString(),
-                false
-            )
+        if (editStudentId?.text?.isNotBlank()!!) {
+            checkOCR(editTestId.text.toString(), editStudentId.text.toString(), false)
         }
     }
-
 
     private fun showPopupDialog(view: View) {
         val layoutInflater =
@@ -231,47 +220,34 @@ class SubjectDetailsFragment : Fragment() {
         popupWindow.height = ViewGroup.LayoutParams.WRAP_CONTENT
         popupWindow.isFocusable = true
         popupWindow.setBackgroundDrawable(ColorDrawable())
-        val recyclerView = layoutInflater.findViewById<RecyclerView>(R.id.recyclerViewUsers)
-
+        val recyclerView = layoutInflater.findViewById<RecyclerView>(R.id.recyclerViewTestId)
         val adapter = TestIdAdapter()
-
         val layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
-
-
         recyclerView.adapter = adapter
         recyclerView.layoutManager = layoutManager
-        recyclerView.addItemDecoration(DividerItemDecoration(requireContext(),LinearLayoutManager.HORIZONTAL))
+        recyclerView.addItemDecoration(
+            DividerItemDecoration(requireContext(), LinearLayoutManager.HORIZONTAL)
+        )
         adapter.onItemClickListener {
             editTestId.setText(it.exam_code)
             if (popupWindow.isShowing)
                 popupWindow.dismiss()
-            checkOCR(editTestId.text.toString(), editStudentId.text.toString(),false)
-
+            checkOCR(editTestId.text.toString(), editStudentId.text.toString(), false)
         }
-
         adapter.refreshListItem(fetchExamsResponse?.data!!)
         if (!popupWindow.isShowing)
             popupWindow.showAsDropDown(view, 0, 0)
-
     }
 
-    private fun checkOCR(examCode:String, studentCode:String, moveToMarks: Boolean ) {
+    private fun checkOCR(examCode: String, studentCode: String, moveToMarks: Boolean) {
         textWrongStudentId.visibility = View.GONE
-        val apiInterface: OCRService = ApiClient.getClient()!!.create(OCRService::class.java)
+        val apiInterface: OCRService? = ApiClient.createAPIService()
         data?.data?.get(3)?.text = examDate.toString()
         data?.data?.get(2)?.text = studentCode
-        val checkOCRRequest = CheckOCRRequest(examCode,studentCode, processResult!!)
-        //Log.d(TAG, "getGetProcessData() called with: data = [$requestBody]")
-        val hero = apiInterface.checkOCR(checkOCRRequest)
-
-
-        hero.enqueue(object : Callback<CheckOCRResponse> {
+        val checkOCRRequest = CheckOCRRequest(examCode, studentCode, processResult!!)
+        apiInterface?.checkOCR(checkOCRRequest)?.enqueue(object : Callback<CheckOCRResponse> {
             override fun onFailure(call: Call<CheckOCRResponse>, t: Throwable) {
-                Log.e(SubjectDetailsFragment.TAG, "onResponse: Failuer", t)
-
-                Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
-                //.show()
-
+                Log.e(TAG, "onResponse: Failuer", t)
                 ProgressBarUtil.dismissProgressDialog()
             }
 
@@ -279,51 +255,45 @@ class SubjectDetailsFragment : Fragment() {
                 call: Call<CheckOCRResponse>,
                 response: Response<CheckOCRResponse>
             ) {
-                Log.d(SubjectDetailsFragment.TAG, "onResponse: ${response.isSuccessful}")
+                Log.d(TAG, "onResponse: ${response.isSuccessful}")
                 ProgressBarUtil.dismissProgressDialog()
-                if (response != null && response.isSuccessful && response.body() != null) {
-                    Log.d(SubjectDetailsFragment.TAG, "onResponse: ${response.body()}")
+                if (response.isSuccessful && response.body() != null) {
+                    Log.d(TAG, "onResponse: ${response.body()}")
                     checkOCRResponse = response.body()
 
                     checkOCRResponse?.let {
-                        if (checkOCRResponse != null){
-                            if(checkOCRResponse!!.http.status == 200) {
-                                subjectSummaryListener?.getCheckOCRResponse(checkOCRResponse!!)
-                                if(moveToMarks) {
-                                    preferenceHelper?.setStudentCode(editStudentId.text.toString())
-                                    preferenceHelper?.setExamCode(editTestId.text.toString())
-                                    preferenceHelper?.setExamDate(editExamDate.text.toString())
-                                    subjectSummaryListener?.moveToMarksReceived()
-                                }
-                            }else if(checkOCRResponse?.why!!.contentEquals("WRONG_STUDENT_ID")){
-                                textWrongStudentId.visibility = View.VISIBLE
-
-                            }else{
-                                Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
-                                    .show()
-
+                        if (it.http.status == 200) {
+                            subjectSummaryListener?.getCheckOCRResponse(it)
+                            if (moveToMarks) {
+                                preferenceHelper?.setStudentCode(editStudentId.text.toString())
+                                preferenceHelper?.setExamCode(editTestId.text.toString())
+                                preferenceHelper?.setExamDate(editExamDate.text.toString())
+                                subjectSummaryListener?.moveToMarksReceived()
                             }
+                        } else if (it.why.contentEquals("WRONG_STUDENT_ID")) {
+                            textWrongStudentId.visibility = View.VISIBLE
                         } else {
-                            Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
-                                .show()
-
+                            Toast.makeText(
+                                activity,
+                                getString(R.string.something_went_wrong),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
-
                     }
-                }else{
-                    Toast.makeText(activity, "Some thing went wrong", Toast.LENGTH_SHORT)
+                } else {
+                    Toast.makeText(
+                        activity,
+                        getString(R.string.something_went_wrong),
+                        Toast.LENGTH_SHORT
+                    )
                         .show()
                 }
-
             }
-
         })
-
     }
 
-    interface SubjectSummaryListener{
+    interface SubjectSummaryListener {
         fun getCheckOCRResponse(ocrResponse: CheckOCRResponse)
         fun moveToMarksReceived()
     }
-
 }

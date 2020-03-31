@@ -61,4 +61,5 @@
     <string name="scanning_complete">Scanning Complete!</string>
     <string name="invalid_credentials">Invalid credentials</string>
     <string name="something_went_wrong">Something went wrong</string>
+    <string name="select_exam_date">Select Exam date</string>
 </resources>
