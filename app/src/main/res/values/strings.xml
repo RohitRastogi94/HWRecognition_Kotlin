@@ -65,4 +65,6 @@
     <string name="please_enter_valid_marks">Please enter valid marks</string>
     <string name="message">Message</string>
     <string name="ok">Ok</string>
+    <string name="saved_successfully">Saved Successfully</string>
+    <string name="data_summary">Data Summary</string>
 </resources>
