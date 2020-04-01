@@ -102,6 +102,8 @@ class PhotoFragment internal constructor() : Fragment() {
                     Log.d(TAG, "onResponse: ${response.body()}")
                     if (response.body() == null || response.body()?.filepath == null) {
                         loadingView.visibility = View.GONE
+                        Toast.makeText(activity,  getString(R.string.something_went_wrong), Toast.LENGTH_SHORT)
+                            .show()
                         return
                     }
                     textMessage.text =
@@ -109,6 +111,8 @@ class PhotoFragment internal constructor() : Fragment() {
                     getGetProcessData(response.body()?.filepath!!)
                 } else {
                     loadingView.visibility = View.GONE
+                    Toast.makeText(activity,  getString(R.string.something_went_wrong), Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         })

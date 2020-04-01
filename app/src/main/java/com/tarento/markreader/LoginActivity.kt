@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
+import com.google.gson.Gson
 import com.tarento.markreader.data.ApiClient
 import com.tarento.markreader.data.OCRService
 import com.tarento.markreader.data.model.login.LoginRequest
@@ -117,8 +118,21 @@ class LoginActivity : AppCompatActivity() {
                         }
                     }
                 } else {
+                    var errorMessage = getString(R.string.invalid_credentials)
+                    try {
+                        val loginErrorResponseOj = Gson().fromJson<LoginResponse>(
+                            response.errorBody()?.string() ?: "",
+                            LoginResponse::class.java
+                        )
+                        loginErrorResponseOj?.let {
+                            errorMessage = it.why
+                        }
+                    } catch (ex: Exception) {
+                        ex.printStackTrace()
+                    }
                     Toast.makeText(
-                        this@LoginActivity, getString(R.string.invalid_credentials),
+                        this@LoginActivity,
+                        errorMessage,
                         Toast.LENGTH_SHORT
                     ).show()
                 }

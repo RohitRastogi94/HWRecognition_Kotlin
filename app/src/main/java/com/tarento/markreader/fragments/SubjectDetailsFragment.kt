@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 import com.tarento.markreader.R
 import com.tarento.markreader.data.ApiClient
 import com.tarento.markreader.data.OCRService
@@ -195,8 +196,21 @@ class SubjectDetailsFragment : Fragment() {
                             }
                         }
                     } else {
+                        var errorMessage = getString(R.string.something_went_wrong)
+                        try {
+                            val fetchErrorResponse = Gson().fromJson<FetchExamsResponse>(
+                                response.errorBody()?.string() ?: "",
+                                FetchExamsResponse::class.java
+                            )
+                            fetchErrorResponse?.let {
+                                errorMessage = it.why
+                            }
+                        } catch (ex: Exception) {
+                            ex.printStackTrace()
+                        }
                         Toast.makeText(
-                            activity, getString(R.string.something_went_wrong),
+                            activity,
+                            errorMessage,
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -249,7 +263,7 @@ class SubjectDetailsFragment : Fragment() {
         val checkOCRRequest = CheckOCRRequest(examCode, studentCode, processResult!!)
         apiInterface?.checkOCR(checkOCRRequest)?.enqueue(object : Callback<CheckOCRResponse> {
             override fun onFailure(call: Call<CheckOCRResponse>, t: Throwable) {
-                Log.e(TAG, "onResponse: Failuer", t)
+                Log.e(TAG, "onResponse: Failure", t)
                 ProgressBarUtil.dismissProgressDialog()
             }
 
@@ -283,12 +297,23 @@ class SubjectDetailsFragment : Fragment() {
                         }
                     }
                 } else {
+                    var errorMessage = getString(R.string.something_went_wrong)
+                    try {
+                        val checkErrorResponse = Gson().fromJson<CheckOCRResponse>(
+                            response.errorBody()?.string() ?: "",
+                            CheckOCRResponse::class.java
+                        )
+                        checkErrorResponse?.let {
+                            errorMessage = it.why
+                        }
+                    } catch (ex: Exception) {
+                        ex.printStackTrace()
+                    }
                     Toast.makeText(
                         activity,
-                        getString(R.string.something_went_wrong),
+                        errorMessage,
                         Toast.LENGTH_SHORT
-                    )
-                        .show()
+                    ).show()
                 }
             }
         })
