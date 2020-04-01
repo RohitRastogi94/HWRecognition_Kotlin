@@ -62,4 +62,7 @@
     <string name="invalid_credentials">Invalid credentials</string>
     <string name="something_went_wrong">Something went wrong</string>
     <string name="select_exam_date">Select Exam date</string>
+    <string name="please_enter_valid_marks">Please enter valid marks</string>
+    <string name="message">Message</string>
+    <string name="ok">Ok</string>
 </resources>

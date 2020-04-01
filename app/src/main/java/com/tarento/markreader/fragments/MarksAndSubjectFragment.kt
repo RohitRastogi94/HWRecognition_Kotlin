@@ -22,29 +22,36 @@ import kotlinx.android.synthetic.main.fragment_marks_and_subject.*
  */
 class MarksAndSubjectFragment : Fragment() {
 
-    var processResult: ProcessResult? = null
-    var checkOCRResponse: CheckOCRResponse? = null
-    var totalMarks: Float = 0F
-    var totalMarksSecured: Float = 0F
-    val adapter = MarksListAdapter()
-    var updatedTableModel = mutableListOf<ResultTableModel>()
-    var responseIndex: Int = 0
-    var verifyMarksAndSubjectListener:MarksAndSubjectListener? = null
+    private var processResult: ProcessResult? = null
+    private var checkOCRResponse: CheckOCRResponse? = null
+    private var totalMarks: Float = 0F
+    private var totalMarksSecured: Float = 0F
+    private val adapter = MarksListAdapter()
+    private var updatedTableModel: MutableList<ResultTableModel>? = null
+    private var responseIndex: Int = 0
+    private var verifyMarksAndSubjectListener: MarksAndSubjectListener? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if(context is MarksAndSubjectListener){
+        if (context is MarksAndSubjectListener) {
             verifyMarksAndSubjectListener = context
-        }else{
-            Log.d("TAG","Implement Marks summary listener")
+        } else {
+            Log.d("TAG", "Implement Marks summary listener")
         }
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            processResult = it.getSerializable("data") as ProcessResult
-            checkOCRResponse = it.getSerializable("dataOCRResponse") as CheckOCRResponse
+            val intentData = it.getSerializable("data")
+            intentData?.let {
+                processResult = intentData as ProcessResult
+            }
+            val intentOCRResponse = it.getSerializable("dataOCRResponse")
+            intentOCRResponse?.let {
+                checkOCRResponse = intentOCRResponse as CheckOCRResponse
+            }
         }
     }
 
@@ -53,19 +60,18 @@ class MarksAndSubjectFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-
-
         return inflater.inflate(R.layout.fragment_marks_and_subject, container, false)
-
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        textStudentNameFirstLetter.text =
-            checkOCRResponse!!.data.student_name.first().toString()
-        textStudentName.text = checkOCRResponse!!.data.student_name
-        textStudentId.text = checkOCRResponse!!.data.student_code
-        textTestId.text = checkOCRResponse!!.data.exam_code
+        if (checkOCRResponse != null) {
+            textStudentNameFirstLetter.text =
+                checkOCRResponse!!.data.student_name.first().toString()
+            textStudentName.text = checkOCRResponse!!.data.student_name
+            textStudentId.text = checkOCRResponse!!.data.student_code
+            textTestId.text = checkOCRResponse!!.data.exam_code
+        }
 
         buttonCancelMark.setOnClickListener {
             verifyMarksAndSubjectListener?.backToSubjectStep1()
@@ -83,8 +89,8 @@ class MarksAndSubjectFragment : Fragment() {
                             if (i > 0 && j == 3) {
                                 val processDataMax = getProcessData(markResponse.data, i, j - 1)
                                 val processData = getProcessData(markResponse.data, i, j)
-                                if (updatedTableModel.size > i && processData?.row == updatedTableModel[i].rowId) {
-                                    updatedTableModel[i].columnValue.forEachIndexed { index, columnValues ->
+                                if (updatedTableModel!!.size > i && processData?.row == updatedTableModel!![i].rowId) {
+                                    updatedTableModel!![i].columnValue.forEachIndexed { _, columnValues ->
                                         if (columnValues.columnId == 3 && columnValues.columnId == processData.col) {
                                             processData.title = columnValues.value.toString()
 
@@ -93,12 +99,19 @@ class MarksAndSubjectFragment : Fragment() {
                                                 )
                                             ) {
                                                 val pointReceived =
-                                                    if (processData.title.isNullOrEmpty()) -1F else if (processData.title.contentEquals("る.0")) 3F else processData.title.toFloat()
+                                                    when {
+                                                        processData.title.isEmpty() -> -1F
+                                                        processData.title.contentEquals(
+                                                            "る.0"
+                                                        ) -> 3F
+                                                        else -> processData.title.toFloat()
+                                                    }
                                                 val maxMarks = processDataMax?.title
                                                 if (maxMarks != null) {
                                                     totalMarks += maxMarks.toFloat()
                                                     if (pointReceived >= 0) {
-                                                        processData.title = String.format("%.1f", pointReceived)
+                                                        processData.title =
+                                                            String.format("%.1f", pointReceived)
                                                         totalMarksSecured += pointReceived
                                                     }
                                                     if (pointReceived in 0.0..maxMarks.toDouble()) {
@@ -125,11 +138,11 @@ class MarksAndSubjectFragment : Fragment() {
 
                         }
                     }
-                }catch (ex:Exception){
+                } catch (ex: Exception) {
                     ex.printStackTrace()
                 }
             }
-            if(isValidMarks) {
+            if (isValidMarks) {
                 val intent = Intent(activity, SummaryActivity::class.java)
                 val bundle = Bundle()
                 bundle.putSerializable("data", processResult)
@@ -138,42 +151,31 @@ class MarksAndSubjectFragment : Fragment() {
                 bundle.putFloat("TotalMarksSecured", totalMarksSecured)
                 intent.putExtras(bundle)
                 startActivity(intent)
-            }else{
-                val summaryMessage =
-                    AlertDialog.Builder(activity, R.style.DialogTheme).create()
-                summaryMessage.setTitle("Message")
-                summaryMessage.setMessage("Please enter valid marks")
+            } else {
+                val summaryMessage = AlertDialog.Builder(activity, R.style.DialogTheme).create()
+                summaryMessage.setTitle(getString(R.string.message))
+                summaryMessage.setMessage(getString(R.string.please_enter_valid_marks))
                 summaryMessage.setCancelable(false)
-
-                summaryMessage.setButton(
-                    AlertDialog.BUTTON_POSITIVE,
-                    "Ok"
-                ) { dialog, which ->
+                summaryMessage.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok)) { dialog, _ ->
                     dialog.dismiss()
                 }
                 summaryMessage.show()
             }
         }
 
-
         val layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
-
         recyclerMarks.adapter = adapter
         recyclerMarks.layoutManager = layoutManager
         recyclerMarks.addItemDecoration(
-            DividerItemDecoration(
-                requireContext(),
-                LinearLayoutManager.HORIZONTAL
-            )
+            DividerItemDecoration(requireContext(), LinearLayoutManager.HORIZONTAL)
         )
-        adapter.onItemClickListener { resultTableModel, mutableList ->
+        adapter.onItemClickListener { _, mutableList ->
             Log.d("TAG", "ResultTable:$mutableList")
             updatedTableModel = mutableList
         }
-
     }
 
-    fun getMarksHeader(response: List<CheckOCRResponse.Response>?): Int? =
+    private fun getMarksHeader(response: List<CheckOCRResponse.Response>?): Int? =
         response?.indexOfFirst {
             println("header ${it.header.title}")
             it.header.title.equals("Marks Received", true)
@@ -182,7 +184,6 @@ class MarksAndSubjectFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         renderTable()
-
     }
 
     private val headerList = arrayOf(
@@ -193,12 +194,12 @@ class MarksAndSubjectFragment : Fragment() {
         "ઉપચારપાત્ર અધ્યયન નિષ્પતિ "
     )
 
-    fun renderTable() {
+    private fun renderTable() {
         responseIndex = getMarksHeader(checkOCRResponse?.data?.ocr_data?.response) ?: return
-        var markResponseItem = checkOCRResponse?.data?.ocr_data?.response?.get(responseIndex)
+        val markResponseItem = checkOCRResponse?.data?.ocr_data?.response?.get(responseIndex)
         var columns = markResponseItem!!.header.col
         val row = markResponseItem.header.row
-        var taleDetail = mutableListOf<ResultTableModel>()
+        val taleDetail = mutableListOf<ResultTableModel>()
 
         columns = 5
         totalMarks = 0F
@@ -207,29 +208,29 @@ class MarksAndSubjectFragment : Fragment() {
         for (i in 0 until row) {
             val columnValuesList = mutableListOf<ColumnValues>()
             for (j in 0 until columns) {
-                var columnVal = ColumnValues()
+                val columnVal = ColumnValues()
                 if (j > 3 && i > 0) {
                     var maxMarks = getData(markResponseItem.data, i, j - 2)
                     val obtainedMarks = getData(markResponseItem.data, i, j - 1)
-                    maxMarks = if(maxMarks.isEmpty()) "0" else maxMarks
-                    //if (maxMarks.isNotEmpty() && obtainedMarks.isNotEmpty()) {
-                        val pointReceived =
-                            if(obtainedMarks.isEmpty()) -1F else if (obtainedMarks.contentEquals("る.0")) 3F else obtainedMarks.toFloat()
-                        totalMarks += maxMarks.toFloat()
-                        if(pointReceived >= 0)
-                        totalMarksSecured += pointReceived
-                        columnVal.columnId = j
-                        columnVal.maxMark = maxMarks.toFloat()
-                        if (pointReceived >= 0 && pointReceived <= maxMarks.toFloat()) {
-                            columnVal.value = "Pass"
-                        } else {
-                            columnVal.value = "Fail"
+                    maxMarks = if (maxMarks.isEmpty()) "0" else maxMarks
+                    val pointReceived =
+                        when {
+                            obtainedMarks.isEmpty() -> -1F
+                            obtainedMarks.contentEquals("る.0") -> 3F
+                            else -> obtainedMarks.toFloat()
                         }
-                    //}
-
+                    totalMarks += maxMarks.toFloat()
+                    if (pointReceived >= 0)
+                        totalMarksSecured += pointReceived
+                    columnVal.columnId = j
+                    columnVal.maxMark = maxMarks.toFloat()
+                    if (pointReceived >= 0 && pointReceived <= maxMarks.toFloat()) {
+                        columnVal.value = "Pass"
+                    } else {
+                        columnVal.value = "Fail"
+                    }
                 } else {
-
-                    var text = getData(markResponseItem.data, i, j)
+                    val text = getData(markResponseItem.data, i, j)
                     if (i == 0) {//&& text.isEmpty()) {
                         columnVal.columnId = j
                         columnVal.value = headerList[j]
@@ -238,49 +239,46 @@ class MarksAndSubjectFragment : Fragment() {
                         columnVal.value = text
                     }
                 }
-                if(j == 0 && columnVal.value.isNullOrEmpty()){
+                if (j == 0 && columnVal.value.isNullOrEmpty()) {
 
-                }else {
+                } else {
                     columnValuesList.add(columnVal)
                 }
             }
             if (columnValuesList.size == 5) {
-                var resultTableModel = ResultTableModel(i)
+                val resultTableModel = ResultTableModel(i)
                 resultTableModel.columnValue = columnValuesList
                 taleDetail.add(resultTableModel)
             }
         }
-        Log.d("TAG", "Result:" + taleDetail.toString())
-
+        Log.d("TAG", "Result:$taleDetail")
         adapter.refreshListItem(taleDetail)
-
     }
 
-    private fun getData(data: List<CheckOCRResponse.Response.Data>?, row: Int, colum: Int): String {
-        data?.forEachIndexed { index, processResponseData ->
-            if ((processResponseData.col == colum) and (processResponseData.row == row))
+    private fun getData(
+        data: List<CheckOCRResponse.Response.Data>?,
+        row: Int,
+        column: Int
+    ): String {
+        data?.forEachIndexed { _, processResponseData ->
+            if ((processResponseData.col == column) and (processResponseData.row == row))
                 return processResponseData.title
         }
-
         return ""
     }
 
     private fun getProcessData(
         data: List<CheckOCRResponse.Response.Data>?,
-        row: Int,
-        colum: Int
+        row: Int, column: Int
     ): CheckOCRResponse.Response.Data? {
-        data?.forEachIndexed { index, processResponseData ->
-            if ((processResponseData.col == colum) and (processResponseData.row == row))
+        data?.forEachIndexed { _, processResponseData ->
+            if ((processResponseData.col == column) and (processResponseData.row == row))
                 return processResponseData
         }
-
         return null
     }
 
-
-    interface MarksAndSubjectListener{
+    interface MarksAndSubjectListener {
         fun backToSubjectStep1()
     }
-
 }

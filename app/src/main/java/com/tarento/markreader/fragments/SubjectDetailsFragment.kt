@@ -59,10 +59,12 @@ class SubjectDetailsFragment : Fragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
             val intentData = it.getSerializable("data")
-            processResult = intentData as ProcessResult
-            processResult?.let { result ->
-                dataIndex = getStudentSummary(result.response)!!
-                data = result.response[dataIndex]
+            intentData?.let {
+                processResult = intentData as ProcessResult
+                processResult?.let { result ->
+                    dataIndex = getStudentSummary(result.response)!!
+                    data = result.response[dataIndex]
+                }
             }
         }
     }
